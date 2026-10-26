@@ -96,6 +96,7 @@ function StaffUsersPage() {
       setPractitioner("");
       void refresh();
     },
+    onError: () => void refresh(),
   });
   const revoke = useMutation({
     mutationFn: async (id: string) => {
