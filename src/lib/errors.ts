@@ -24,6 +24,8 @@ const MESSAGES: Record<string, string> = {
   HAS_CLINICAL_DATA:
     "Ce compte a un historique médical (rendez-vous, résultats ou comptes rendus). Désactivez-le plutôt que de le supprimer.",
   duplicate: "Cet élément existe déjà.",
+  INVITE_EMAIL_FAILED:
+    "L'invitation est créée mais l'e-mail n'a pas pu être envoyé. Réessayez plus tard.",
 };
 
 // Supabase Auth error codes (AuthError.code) -> safe French messages.

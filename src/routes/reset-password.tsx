@@ -36,7 +36,7 @@ function ResetPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const isRecovery = window.location.hash.includes("type=recovery");
+    const isRecovery = /type=(recovery|invite)/.test(window.location.hash);
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setReady(true);
     });
