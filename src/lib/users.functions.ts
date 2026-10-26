@@ -27,7 +27,8 @@ export const inviteUser = createServerFn({ method: "POST" })
     if (error) return { ok: false as const, error: error.message };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const site = process.env["SITE_URL"] ?? new URL(getRequest().url).origin;
+    // || (not ??) so an empty SITE_URL="" from .env.example also falls back
+    const site = process.env["SITE_URL"] || new URL(getRequest().url).origin;
     const { error: mailError } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
       redirectTo: `${site}/reset-password`,
     });
