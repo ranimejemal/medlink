@@ -13,7 +13,10 @@ const RULES: [string, (v: string) => boolean][] = [
 export const passwordSchema = z
   .string()
   .max(128)
-  .refine((v) => RULES.every(([, t]) => t(v)), "Le mot de passe ne respecte pas les règles de sécurité");
+  .refine(
+    (v) => RULES.every(([, t]) => t(v)),
+    "Le mot de passe ne respecte pas les règles de sécurité",
+  );
 
 export function PasswordRules({ value }: { value: string }) {
   return (
@@ -21,7 +24,13 @@ export function PasswordRules({ value }: { value: string }) {
       {RULES.map(([label, test]) => {
         const ok = test(value);
         return (
-          <li key={label} className={cn("flex items-center gap-1.5 text-xs", ok ? "text-success" : "text-muted-foreground")}>
+          <li
+            key={label}
+            className={cn(
+              "flex items-center gap-1.5 text-xs",
+              ok ? "text-success" : "text-muted-foreground",
+            )}
+          >
             {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />} {label}
           </li>
         );

@@ -8,7 +8,11 @@ const LOCK_MINUTES = 15;
 
 function clientIp(): string | null {
   const req = getRequest();
-  return req?.headers.get("cf-connecting-ip") ?? req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+  return (
+    req?.headers.get("cf-connecting-ip") ??
+    req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    null
+  );
 }
 
 /**
@@ -17,7 +21,12 @@ function clientIp(): string | null {
  */
 export const secureSignIn = createServerFn({ method: "POST" })
   .inputValidator((d) =>
-    z.object({ email: z.string().trim().toLowerCase().email().max(255), password: z.string().min(1).max(128) }).parse(d),
+    z
+      .object({
+        email: z.string().trim().toLowerCase().email().max(255),
+        password: z.string().min(1).max(128),
+      })
+      .parse(d),
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -34,9 +43,15 @@ export const secureSignIn = createServerFn({ method: "POST" })
 
     if ((count ?? 0) >= MAX_FAILURES) {
       await supabaseAdmin.from("audit_logs").insert({
-        user_email: data.email, action: "auth.login_blocked", severity: "critical", ip_address: ip,
+        user_email: data.email,
+        action: "auth.login_blocked",
+        severity: "critical",
+        ip_address: ip,
       });
-      return { ok: false as const, error: `Compte temporairement verrouillé après plusieurs tentatives. Réessayez dans ${LOCK_MINUTES} minutes.` };
+      return {
+        ok: false as const,
+        error: `Compte temporairement verrouillé après plusieurs tentatives. Réessayez dans ${LOCK_MINUTES} minutes.`,
+      };
     }
 
     const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -45,37 +60,61 @@ export const secureSignIn = createServerFn({ method: "POST" })
       global: {
         fetch: (input, init) => {
           const h = new Headers(init?.headers);
-          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+            h.delete("Authorization");
           h.set("apikey", key);
           return fetch(input, { ...init, headers: h });
         },
       },
     });
-    const { data: auth, error } = await client.auth.signInWithPassword({ email: data.email, password: data.password });
+    const { data: auth, error } = await client.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
 
     if (error || !auth.session) {
-      await supabaseAdmin.from("login_attempts").insert({ email: data.email, ip_address: ip, success: false });
+      await supabaseAdmin
+        .from("login_attempts")
+        .insert({ email: data.email, ip_address: ip, success: false });
       await supabaseAdmin.from("audit_logs").insert({
-        user_email: data.email, action: "auth.login_failed", severity: "warning", ip_address: ip,
+        user_email: data.email,
+        action: "auth.login_failed",
+        severity: "warning",
+        ip_address: ip,
       });
       const unconfirmed = error?.message?.toLowerCase().includes("not confirmed");
       return {
         ok: false as const,
-        error: unconfirmed ? "Veuillez confirmer votre adresse e-mail avant de vous connecter." : "Identifiants invalides.",
+        error: unconfirmed
+          ? "Veuillez confirmer votre adresse e-mail avant de vous connecter."
+          : "Identifiants invalides.",
       };
     }
 
-    const { data: profile } = await supabaseAdmin.from("profiles").select("is_active").eq("id", auth.user.id).maybeSingle();
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("is_active")
+      .eq("id", auth.user.id)
+      .maybeSingle();
     if (profile && !profile.is_active) {
       await supabaseAdmin.from("audit_logs").insert({
-        user_id: auth.user.id, user_email: data.email, action: "auth.login_inactive", severity: "warning", ip_address: ip,
+        user_id: auth.user.id,
+        user_email: data.email,
+        action: "auth.login_inactive",
+        severity: "warning",
+        ip_address: ip,
       });
       return { ok: false as const, error: "Ce compte est désactivé. Contactez l'administration." };
     }
 
-    await supabaseAdmin.from("login_attempts").insert({ email: data.email, ip_address: ip, success: true });
+    await supabaseAdmin
+      .from("login_attempts")
+      .insert({ email: data.email, ip_address: ip, success: true });
     await supabaseAdmin.from("audit_logs").insert({
-      user_id: auth.user.id, user_email: data.email, action: "auth.login_success", ip_address: ip,
+      user_id: auth.user.id,
+      user_email: data.email,
+      action: "auth.login_success",
+      ip_address: ip,
     });
     return {
       ok: true as const,
@@ -88,10 +127,21 @@ export const secureSignIn = createServerFn({ method: "POST" })
 export const logSecurityEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({
-      action: z.enum(["auth.logout", "auth.session_expired", "mfa.enrolled", "mfa.verified", "mfa.failed", "password.changed", "access.denied", "record.viewed"]),
-      entityId: z.string().max(64).optional(),
-    }).parse(d),
+    z
+      .object({
+        action: z.enum([
+          "auth.logout",
+          "auth.session_expired",
+          "mfa.enrolled",
+          "mfa.verified",
+          "mfa.failed",
+          "password.changed",
+          "access.denied",
+          "record.viewed",
+        ]),
+        entityId: z.string().max(64).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     await context.supabase.rpc("write_audit", {
@@ -99,7 +149,8 @@ export const logSecurityEvent = createServerFn({ method: "POST" })
       _entity: data.action.split(".")[0] ?? "auth",
       _entity_id: data.entityId ?? "",
       _details: null as never,
-      _severity: data.action === "mfa.failed" || data.action === "access.denied" ? "warning" : "info",
+      _severity:
+        data.action === "mfa.failed" || data.action === "access.denied" ? "warning" : "info",
       _ip: clientIp() ?? "",
     });
     return { ok: true };

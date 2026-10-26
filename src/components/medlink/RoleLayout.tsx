@@ -25,5 +25,11 @@ export const REQ_STATUS: Record<string, { label: string; cls: string }> = {
 
 export function Pill({ v }: { v: { label: string; cls: string } | undefined }) {
   if (!v) return null;
-  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${v.cls}`}>{v.label}</span>;
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${v.cls}`}
+    >
+      {v.label}
+    </span>
+  );
 }

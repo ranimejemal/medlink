@@ -10,5 +10,12 @@ export const Route = createFileRoute("/session-expired")({
       { property: "og:description", content: "Session expirée après inactivité." },
     ],
   }),
-  component: () => <ErrorScreen code="⏱" title="Session expirée" message="Pour protéger vos données, vous avez été déconnecté après 15 minutes d'inactivité." action={{ to: "/login", label: "Se reconnecter" }} />,
+  component: () => (
+    <ErrorScreen
+      code="⏱"
+      title="Session expirée"
+      message="Pour protéger vos données, vous avez été déconnecté après 15 minutes d'inactivité."
+      action={{ to: "/login", label: "Se reconnecter" }}
+    />
+  ),
 });

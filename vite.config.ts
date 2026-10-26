@@ -15,7 +15,14 @@ export default defineConfig(({ command, mode }) => {
     server: { host: "::", port: 8080 },
     resolve: {
       alias: { "@": path.resolve(process.cwd(), "src") },
-      dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
+      dedupe: [
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "@tanstack/react-query",
+        "@tanstack/query-core",
+      ],
     },
     plugins: [
       tailwindcss(),
@@ -23,7 +30,10 @@ export default defineConfig(({ command, mode }) => {
       tanstackStart({
         // Use src/server.ts (our SSR error wrapper) as the server entry.
         server: { entry: "server" },
-        importProtection: { behavior: "error", client: { files: ["**/server/**"], specifiers: ["server-only"] } },
+        importProtection: {
+          behavior: "error",
+          client: { files: ["**/server/**"], specifiers: ["server-only"] },
+        },
       }),
       // Production server bundle: a standalone Node server, suited to a VPS (US-57).
       ...(command === "build" ? [nitro({ preset: "node-server" })] : []),

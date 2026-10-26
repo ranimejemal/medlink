@@ -6,11 +6,24 @@ import { ListSkeleton, PageHeader, Panel, StatCard, StatusBadge } from "@/compon
 import { RequestQueue } from "../staff/dashboard";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
-  head: () => ({ meta: [{ title: "Administration — MedLink" }, { name: "description", content: "Vue d'ensemble du réseau MedLink." }] }),
+  head: () => ({
+    meta: [
+      { title: "Administration — MedLink" },
+      { name: "description", content: "Vue d'ensemble du réseau MedLink." },
+    ],
+  }),
   component: AdminDashboard,
 });
 
-type Stats = { patients: number; practitioners: number; upcoming: number; cancelled_30d: number; failed_logins_24h: number; by_clinic: { city: string; total: number }[]; by_status: { status: string; total: number }[] };
+type Stats = {
+  patients: number;
+  practitioners: number;
+  upcoming: number;
+  cancelled_30d: number;
+  failed_logins_24h: number;
+  by_clinic: { city: string; total: number }[];
+  by_status: { status: string; total: number }[];
+};
 
 function AdminDashboard() {
   const q = useQuery({
@@ -30,17 +43,45 @@ function AdminDashboard() {
         <StatCard label="Praticiens actifs" value={s?.practitioners ?? "—"} icon={Stethoscope} />
         <StatCard label="RDV à venir" value={s?.upcoming ?? "—"} icon={CalendarDays} />
         <StatCard label="Annulés (30 j)" value={s?.cancelled_30d ?? "—"} icon={CalendarX} />
-        <StatCard label="Échecs connexion (24 h)" value={s?.failed_logins_24h ?? "—"} icon={ShieldAlert} />
+        <StatCard
+          label="Échecs connexion (24 h)"
+          value={s?.failed_logins_24h ?? "—"}
+          icon={ShieldAlert}
+        />
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Rendez-vous par ville (30 j)">
-          {q.isLoading ? <ListSkeleton /> : <ul className="divide-y">{s?.by_clinic.map((c) => <li key={c.city} className="flex justify-between py-2 text-sm"><span>{c.city}</span><span className="font-medium">{c.total}</span></li>)}</ul>}
+          {q.isLoading ? (
+            <ListSkeleton />
+          ) : (
+            <ul className="divide-y">
+              {s?.by_clinic.map((c) => (
+                <li key={c.city} className="flex justify-between py-2 text-sm">
+                  <span>{c.city}</span>
+                  <span className="font-medium">{c.total}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </Panel>
         <Panel title="Rendez-vous par statut">
-          {q.isLoading ? <ListSkeleton /> : <ul className="divide-y">{s?.by_status.map((c) => <li key={c.status} className="flex justify-between py-2 text-sm"><StatusBadge status={c.status} /><span className="font-medium">{c.total}</span></li>)}</ul>}
+          {q.isLoading ? (
+            <ListSkeleton />
+          ) : (
+            <ul className="divide-y">
+              {s?.by_status.map((c) => (
+                <li key={c.status} className="flex justify-between py-2 text-sm">
+                  <StatusBadge status={c.status} />
+                  <span className="font-medium">{c.total}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </Panel>
       </div>
-      <Panel title="Demandes de rendez-vous des patients"><RequestQueue /></Panel>
+      <Panel title="Demandes de rendez-vous des patients">
+        <RequestQueue />
+      </Panel>
     </div>
   );
 }

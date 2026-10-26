@@ -15,7 +15,10 @@ export const Route = createFileRoute("/forgot-password")({
       { title: "Mot de passe oublié — MedLink" },
       { name: "description", content: "Réinitialisez le mot de passe de votre compte MedLink." },
       { property: "og:title", content: "Mot de passe oublié — MedLink" },
-      { property: "og:description", content: "Réinitialisation sécurisée du mot de passe MedLink." },
+      {
+        property: "og:description",
+        content: "Réinitialisation sécurisée du mot de passe MedLink.",
+      },
     ],
   }),
   component: ForgotPage,
@@ -32,24 +35,45 @@ function ForgotPage() {
     const p = z.string().trim().email().safeParse(email);
     if (!p.success) return setError("Adresse e-mail invalide");
     setLoading(true);
-    await supabase.auth.resetPasswordForEmail(p.data, { redirectTo: `${window.location.origin}/reset-password` });
+    await supabase.auth.resetPasswordForEmail(p.data, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
     setLoading(false);
     // Same message whether or not the account exists (no user enumeration).
     setSent(true);
   };
 
   return (
-    <AuthLayout title="Mot de passe oublié" subtitle="Recevez un lien de réinitialisation par e-mail." footer={<Link to="/login" className="font-medium text-primary hover:underline">Retour à la connexion</Link>}>
+    <AuthLayout
+      title="Mot de passe oublié"
+      subtitle="Recevez un lien de réinitialisation par e-mail."
+      footer={
+        <Link to="/login" className="font-medium text-primary hover:underline">
+          Retour à la connexion
+        </Link>
+      }
+    >
       {sent ? (
         <div className="card-surface p-6 text-center">
           <MailCheck className="mx-auto h-10 w-10 text-success" />
-          <p className="mt-3 text-sm text-muted-foreground">Si un compte existe pour cette adresse, un lien de réinitialisation vient d'être envoyé.</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Si un compte existe pour cette adresse, un lien de réinitialisation vient d'être envoyé.
+          </p>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4" noValidate>
-          {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
-          <div className="space-y-2"><Label htmlFor="em">Adresse e-mail</Label><Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <Button type="submit" className="h-11 w-full" disabled={loading}>{loading && <Loader2 className="h-4 w-4 animate-spin" />} Envoyer le lien</Button>
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="em">Adresse e-mail</Label>
+            <Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <Button type="submit" className="h-11 w-full" disabled={loading}>
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />} Envoyer le lien
+          </Button>
         </form>
       )}
     </AuthLayout>
