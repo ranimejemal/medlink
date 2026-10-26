@@ -28,14 +28,14 @@ espace patient, espace praticien, back-office administratif et journal d'audit.
 
 ## 1. Technologies
 
-| Rôle | Outil |
-| --- | --- |
-| Interface et pages | React 19, TanStack Start / Router / Query, TypeScript |
-| Style | Tailwind CSS 4, shadcn/ui (Radix) |
-| Base de données et comptes | Supabase : PostgreSQL, Auth, MFA TOTP, Row Level Security (RLS) |
-| Code serveur | Fonctions serveur TanStack Start (connexion sécurisée, demandes assistées par IA) |
-| IA | SDK `ai` avec n'importe quelle API compatible OpenAI |
-| Tests et qualité | Vitest, ESLint, Prettier |
+| Rôle                       | Outil                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| Interface et pages         | React 19, TanStack Start / Router / Query, TypeScript                             |
+| Style                      | Tailwind CSS 4, shadcn/ui (Radix)                                                 |
+| Base de données et comptes | Supabase : PostgreSQL, Auth, MFA TOTP, Row Level Security (RLS)                   |
+| Code serveur               | Fonctions serveur TanStack Start (connexion sécurisée, demandes assistées par IA) |
+| IA                         | SDK `ai` avec n'importe quelle API compatible OpenAI                              |
+| Tests et qualité           | Vitest, ESLint, Prettier                                                          |
 
 **Idée générale :** le navigateur parle à Supabase pour les données courantes, et la sécurité est
 appliquée **dans la base** (RLS) : un patient ne peut lire que ses propres données, même si
@@ -73,8 +73,8 @@ npm install --legacy-peer-deps
 1. Sur https://supabase.com, créez un **nouveau projet vide**.
 2. Dans **Project Settings → API**, notez :
    - l'**URL du projet** (`https://xxxx.supabase.co`) ;
-   - la **clé publique** (*publishable key*, commence par `sb_publishable_`) ;
-   - la **clé secrète** (*secret key*, commence par `sb_secret_`) — **ne la partagez jamais**.
+   - la **clé publique** (_publishable key_, commence par `sb_publishable_`) ;
+   - la **clé secrète** (_secret key_, commence par `sb_secret_`) — **ne la partagez jamais**.
 
 ### Étape 4 — Créer les tables et les données de démo
 
@@ -88,8 +88,8 @@ Puis réglez l'authentification :
 
 3. **Authentication → Sign In / Providers** : vérifiez que **MFA (TOTP)** est activé.
 4. **Authentication → URL Configuration** :
-   - *Site URL* : `http://localhost:8080`
-   - *Redirect URLs* : `http://localhost:8080/**`
+   - _Site URL_ : `http://localhost:8080`
+   - _Redirect URLs_ : `http://localhost:8080/**`
 5. **Authentication → Policies** : mot de passe minimum **12 caractères** (même règle que l'application).
 
 ### Étape 5 — Configurer le fichier `.env`
@@ -119,17 +119,17 @@ Enfin, **créez les comptes de démo** (voir section suivante).
 
 Fichier `.env` à la racine (jamais commité : il est dans `.gitignore`).
 
-| Variable | Obligatoire | Où la trouver / à quoi ça sert |
-| --- | --- | --- |
-| `SUPABASE_URL` | oui | URL du projet Supabase (côté serveur) |
-| `SUPABASE_PUBLISHABLE_KEY` | oui | Clé publique `sb_publishable_…` (côté serveur) |
-| `VITE_SUPABASE_URL` | oui | Même URL, pour le navigateur |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | oui | Même clé publique, pour le navigateur |
-| `SUPABASE_SERVICE_ROLE_KEY` | **oui** | Clé secrète `sb_secret_…`. **Serveur uniquement.** Contourne toute la sécurité de la base |
-| `AI_API_KEY` | non* | Clé de l'API IA. *Sans elle, la page « Nouvelle demande » ne fonctionne pas* |
-| `AI_BASE_URL` | non | Par défaut `https://api.openai.com/v1` |
-| `AI_MODEL` | non | Par défaut `gpt-4o-mini` |
-| `CRON_SECRET` | non | Protège les tâches planifiées (rappels). Générer : `openssl rand -hex 32` |
+| Variable                        | Obligatoire | Où la trouver / à quoi ça sert                                                            |
+| ------------------------------- | ----------- | ----------------------------------------------------------------------------------------- |
+| `SUPABASE_URL`                  | oui         | URL du projet Supabase (côté serveur)                                                     |
+| `SUPABASE_PUBLISHABLE_KEY`      | oui         | Clé publique `sb_publishable_…` (côté serveur)                                            |
+| `VITE_SUPABASE_URL`             | oui         | Même URL, pour le navigateur                                                              |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | oui         | Même clé publique, pour le navigateur                                                     |
+| `SUPABASE_SERVICE_ROLE_KEY`     | **oui**     | Clé secrète `sb_secret_…`. **Serveur uniquement.** Contourne toute la sécurité de la base |
+| `AI_API_KEY`                    | non*        | Clé de l'API IA. _Sans elle, la page « Nouvelle demande » ne fonctionne pas_              |
+| `AI_BASE_URL`                   | non         | Par défaut `https://api.openai.com/v1`                                                    |
+| `AI_MODEL`                      | non         | Par défaut `gpt-4o-mini`                                                                  |
+| `CRON_SECRET`                   | non         | Protège les tâches planifiées (rappels). Générer : `openssl rand -hex 32`                 |
 
 **Règle d'or :** une clé secrète ne commence **jamais** par `VITE_` (sinon elle serait envoyée
 dans le navigateur de tous les visiteurs).
@@ -142,29 +142,29 @@ le seed : il faut les créer une fois.
 **Création :** allez sur `/register`, inscrivez-vous avec chacun de ces e-mails (le rôle est attribué
 automatiquement grâce aux invitations du seed), puis confirmez l'e-mail si Supabase le demande.
 
-| E-mail | Rôle | MFA | Page d'accueil |
-| --- | --- | --- | --- |
-| `patient.demo@medlink.test` | Patient | non | `/patient/dashboard` |
-| `doctor.demo@medlink.test` | Praticien | **oui** | `/practitioner/dashboard` |
-| `admin.demo@medlink.test` | Administrateur | **oui** | `/admin/dashboard` |
-| `staff.demo@medlink.test` | Personnel administratif | non | `/staff/dashboard` |
+| E-mail                      | Rôle                    | MFA     | Page d'accueil            |
+| --------------------------- | ----------------------- | ------- | ------------------------- |
+| `patient.demo@medlink.test` | Patient                 | non     | `/patient/dashboard`      |
+| `doctor.demo@medlink.test`  | Praticien               | **oui** | `/practitioner/dashboard` |
+| `admin.demo@medlink.test`   | Administrateur          | **oui** | `/admin/dashboard`        |
+| `staff.demo@medlink.test`   | Personnel administratif | non     | `/staff/dashboard`        |
 
 Tout autre e-mail qui s'inscrit devient **Patient**.
 
-| Rôle | Peut faire |
-| --- | --- |
-| Patient | Voir ses rendez-vous, envoyer une demande de rendez-vous (assistée par IA), voir ses résultats **validés** |
-| Praticien | Voir son agenda et les dossiers de **ses** patients |
-| Personnel | Traiter les demandes des patients, gérer créneaux et rendez-vous |
-| Administrateur | Statistiques du réseau, comptes, cliniques, journal d'audit |
+| Rôle           | Peut faire                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| Patient        | Voir ses rendez-vous, envoyer une demande de rendez-vous (assistée par IA), voir ses résultats **validés** |
+| Praticien      | Voir son agenda et les dossiers de **ses** patients                                                        |
+| Personnel      | Traiter les demandes des patients, gérer créneaux et rendez-vous                                           |
+| Administrateur | Statistiques du réseau, comptes, cliniques, journal d'audit                                                |
 
 ## 6. Se connecter (MFA)
 
 - **Patient et Personnel** : e-mail + mot de passe.
 - **Praticien et Administrateur** : e-mail + mot de passe, **puis** un code à 6 chiffres.
-  - *Première connexion* : la page `/mfa` affiche un **QR code**. Scannez-le avec votre application
+  - _Première connexion_ : la page `/mfa` affiche un **QR code**. Scannez-le avec votre application
     d'authentification, puis saisissez le code pour activer le MFA.
-  - *Connexions suivantes* : saisissez simplement le code à 6 chiffres actuel.
+  - _Connexions suivantes_ : saisissez simplement le code à 6 chiffres actuel.
 - **Verrouillage** : 5 mots de passe faux en 15 minutes bloquent le compte pendant 15 minutes.
 - **Inactivité** : déconnexion automatique après 15 minutes sans activité.
 
@@ -208,31 +208,31 @@ npx supabase gen types typescript --project-id <votre-ref-projet> > src/integrat
 
 ## 8. Commandes utiles
 
-| Commande | Rôle |
-| --- | --- |
-| `npm run dev` | Serveur de développement (http://localhost:8080) |
-| `npm run build` | Build de production (serveur Node dans `.output/`) |
-| `npm run preview` | Prévisualiser le build |
-| `npm test` | Lancer les tests (Vitest) |
-| `npm run lint` | Vérifier le code (ESLint) |
-| `npm run format` | Formater le code (Prettier) |
+| Commande          | Rôle                                               |
+| ----------------- | -------------------------------------------------- |
+| `npm run dev`     | Serveur de développement (http://localhost:8080)   |
+| `npm run build`   | Build de production (serveur Node dans `.output/`) |
+| `npm run preview` | Prévisualiser le build                             |
+| `npm test`        | Lancer les tests (Vitest)                          |
+| `npm run lint`    | Vérifier le code (ESLint)                          |
+| `npm run format`  | Formater le code (Prettier)                        |
 
 (Avec Bun : `bun run <commande>`.)
 
 ## 9. Problèmes fréquents
 
-| Message / symptôme | Cause | Solution |
-| --- | --- | --- |
-| `npm error Cannot read properties of null (reading 'edgesOut')` | Bug de npm avec `jsdom` | `npm install --legacy-peer-deps` (supprimez d'abord `node_modules` et `package-lock.json`) |
-| « Le service est momentanément indisponible » à la connexion | `SUPABASE_SERVICE_ROLE_KEY` vide ou serveur non redémarré | Renseigner la clé dans `.env`, `Ctrl+C`, `npm run dev`. Le détail est dans le terminal |
-| « Identifiants invalides » | Le compte de démo n'a pas été créé, ou mauvais mot de passe | S'inscrire via `/register` avec l'e-mail de démo |
-| « Veuillez confirmer votre adresse e-mail » | Confirmation d'e-mail activée | Cliquer le lien reçu, ou la désactiver dans Supabase (Authentication → Providers → Email) **en développement seulement** |
-| « Compte temporairement verrouillé » | 5 échecs en 15 min | Attendre 15 minutes |
-| Le lien de confirmation / réinitialisation ne marche pas | URL non autorisée | Vérifier *Redirect URLs* : `http://localhost:8080/**` (et le bon port) |
-| Page blanche ou 404 après clic dans le menu | La page n'est pas encore développée | Voir [section 13](#13-état-davancement) |
-| Le code MFA est refusé | Heure du téléphone décalée | Activer l'heure automatique sur le téléphone |
-| « Le service est indisponible » sur *Nouvelle demande* | `AI_API_KEY` vide | Renseigner la clé IA dans `.env` |
-| Port 8080 occupé | Un autre programme l'utilise | Vite prend le port suivant ; ajouter ce port dans les *Redirect URLs* Supabase |
+| Message / symptôme                                              | Cause                                                       | Solution                                                                                                                 |
+| --------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `npm error Cannot read properties of null (reading 'edgesOut')` | Bug de npm avec `jsdom`                                     | `npm install --legacy-peer-deps` (supprimez d'abord `node_modules` et `package-lock.json`)                               |
+| « Le service est momentanément indisponible » à la connexion    | `SUPABASE_SERVICE_ROLE_KEY` vide ou serveur non redémarré   | Renseigner la clé dans `.env`, `Ctrl+C`, `npm run dev`. Le détail est dans le terminal                                   |
+| « Identifiants invalides »                                      | Le compte de démo n'a pas été créé, ou mauvais mot de passe | S'inscrire via `/register` avec l'e-mail de démo                                                                         |
+| « Veuillez confirmer votre adresse e-mail »                     | Confirmation d'e-mail activée                               | Cliquer le lien reçu, ou la désactiver dans Supabase (Authentication → Providers → Email) **en développement seulement** |
+| « Compte temporairement verrouillé »                            | 5 échecs en 15 min                                          | Attendre 15 minutes                                                                                                      |
+| Le lien de confirmation / réinitialisation ne marche pas        | URL non autorisée                                           | Vérifier _Redirect URLs_ : `http://localhost:8080/**` (et le bon port)                                                   |
+| Page blanche ou 404 après clic dans le menu                     | La page n'est pas encore développée                         | Voir [section 13](#13-état-davancement)                                                                                  |
+| Le code MFA est refusé                                          | Heure du téléphone décalée                                  | Activer l'heure automatique sur le téléphone                                                                             |
+| « Le service est indisponible » sur _Nouvelle demande_          | `AI_API_KEY` vide                                           | Renseigner la clé IA dans `.env`                                                                                         |
+| Port 8080 occupé                                                | Un autre programme l'utilise                                | Vite prend le port suivant ; ajouter ce port dans les _Redirect URLs_ Supabase                                           |
 
 ## 10. Sécurité : règles de l'équipe
 
@@ -251,7 +251,7 @@ Ce projet manipule des données de santé. Respectez toujours ces règles :
 - Une fonctionnalité = une branche : `git checkout -b feature/us-07-reservation`.
 - Nommez les branches et commits avec la référence de la user story du backlog (`US-07`).
 - Avant de pousser : `npm run lint` et `npm test` doivent passer.
-- Ouvrez une *pull request* ; un autre membre relit avant la fusion.
+- Ouvrez une _pull request_ ; un autre membre relit avant la fusion.
 - Après un `git pull`, relancez `npm install --legacy-peer-deps` si `package.json` a changé.
 
 ## 12. Déploiement sur le VPS
@@ -265,13 +265,13 @@ node .output/server/index.mjs
 
 - Un **reverse proxy HTTPS** (Nginx ou Caddy) avec certificat (Let's Encrypt) devant l'application — exigence US-44.
 - Les variables d'environnement du [tableau](#4-variables-denvironnement) définies sur le serveur (jamais dans le dépôt).
-- Dans Supabase : *Site URL* et *Redirect URLs* avec votre vrai domaine (`https://votre-domaine.tn/**`).
+- Dans Supabase : _Site URL_ et _Redirect URLs_ avec votre vrai domaine (`https://votre-domaine.tn/**`).
 - Un gestionnaire de processus (`pm2` ou `systemd`) pour relancer l'application.
 - Supprimer les comptes de démo (voir section 10).
 
 ## 13. État d'avancement
 
-Suivi détaillé : fichier *MedLink Product Backlog Roadmap* (Release 1 = socle sécurisé).
+Suivi détaillé : fichier _MedLink Product Backlog Roadmap_ (Release 1 = socle sécurisé).
 
 **Fonctionne aujourd'hui :** inscription, connexion, réinitialisation du mot de passe, MFA
 (praticien / administrateur), contrôle d'accès par rôle, anti brute-force, journal d'audit côté base,

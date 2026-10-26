@@ -15,6 +15,7 @@ const MESSAGES: Record<string, string> = {
   SELF_DEMOTION: "Vous ne pouvez pas retirer votre propre rôle administrateur.",
   SELF_DEACTIVATION: "Vous ne pouvez pas désactiver votre propre compte.",
   INVALID_REASON: "Le motif est trop long (500 caractères maximum).",
+  PRACTITIONER_ALREADY_LINKED: "Ce praticien a déjà un compte ou une invitation en cours.",
   INVALID_SLOT: "Créneau invalide : il doit être dans le futur et durer au plus 4 heures.",
   SLOT_OVERLAP: "Ce créneau chevauche un créneau existant.",
   INVALID_EMAIL: "Adresse e-mail invalide.",
@@ -23,6 +24,8 @@ const MESSAGES: Record<string, string> = {
   HAS_CLINICAL_DATA:
     "Ce compte a un historique médical (rendez-vous, résultats ou comptes rendus). Désactivez-le plutôt que de le supprimer.",
   duplicate: "Cet élément existe déjà.",
+  INVITE_EMAIL_FAILED:
+    "L'invitation est créée mais l'e-mail n'a pas pu être envoyé. Réessayez plus tard.",
 };
 
 // Supabase Auth error codes (AuthError.code) -> safe French messages.

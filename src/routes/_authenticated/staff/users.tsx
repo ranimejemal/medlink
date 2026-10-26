@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmptyState, ListSkeleton, PageHeader, Panel } from "@/components/medlink/ui";
 import { friendlyError } from "@/lib/errors";
+import { useServerFn } from "@tanstack/react-start";
+import { inviteUser } from "@/lib/users.functions";
 
 export const Route = createFileRoute("/_authenticated/staff/users")({
   head: () => ({
@@ -36,6 +38,7 @@ function StaffUsersPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("practitioner");
   const [practitioner, setPractitioner] = useState("");
+  const sendInvite = useServerFn(inviteUser);
 
   const users = useQuery({
     queryKey: ["staff", "users"],
@@ -79,12 +82,14 @@ function StaffUsersPage() {
     mutationFn: async () => {
       const parsed = emailSchema.safeParse(email);
       if (!parsed.success) throw new Error("INVALID_EMAIL");
-      const { error } = await supabase.rpc("admin_invite_user", {
-        _email: parsed.data,
-        _role: role,
-        ...(role === "practitioner" && practitioner ? { _practitioner: practitioner } : {}),
+      const res = await sendInvite({
+        data: {
+          email: parsed.data,
+          role,
+          ...(role === "practitioner" && practitioner ? { practitionerId: practitioner } : {}),
+        },
       });
-      if (error) throw error;
+      if (!res.ok) throw new Error(res.error);
     },
     onSuccess: () => {
       setEmail("");
