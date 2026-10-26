@@ -112,6 +112,7 @@ function UsersPage() {
       setFormError(null);
       void refresh();
     },
+    onError: () => void refresh(),
   });
   const revoke = useMutation({
     mutationFn: async (id: string) => {
