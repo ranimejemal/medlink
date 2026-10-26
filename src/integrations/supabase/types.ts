@@ -299,14 +299,19 @@ export type Database = {
         Row: {
           appointment_id: string | null;
           created_at: string;
-          diagnosis: string;
+          diagnosis: string | null;
+          diagnosis_enc: string | null;
           id: string;
-          observations: string;
+          observations: string | null;
+          observations_enc: string | null;
           patient_id: string;
           practitioner_id: string;
-          prescription: string;
-          reason: string;
-          recommendations: string;
+          prescription: string | null;
+          prescription_enc: string | null;
+          reason: string | null;
+          reason_enc: string | null;
+          recommendations: string | null;
+          recommendations_enc: string | null;
           status: Database["public"]["Enums"]["report_status"];
           updated_at: string;
           validated_at: string | null;
@@ -314,14 +319,19 @@ export type Database = {
         Insert: {
           appointment_id?: string | null;
           created_at?: string;
-          diagnosis?: string;
+          diagnosis?: string | null;
+          diagnosis_enc?: string | null;
           id?: string;
-          observations?: string;
+          observations?: string | null;
+          observations_enc?: string | null;
           patient_id: string;
           practitioner_id: string;
-          prescription?: string;
-          reason: string;
-          recommendations?: string;
+          prescription?: string | null;
+          prescription_enc?: string | null;
+          reason?: string | null;
+          reason_enc?: string | null;
+          recommendations?: string | null;
+          recommendations_enc?: string | null;
           status?: Database["public"]["Enums"]["report_status"];
           updated_at?: string;
           validated_at?: string | null;
@@ -329,14 +339,19 @@ export type Database = {
         Update: {
           appointment_id?: string | null;
           created_at?: string;
-          diagnosis?: string;
+          diagnosis?: string | null;
+          diagnosis_enc?: string | null;
           id?: string;
-          observations?: string;
+          observations?: string | null;
+          observations_enc?: string | null;
           patient_id?: string;
           practitioner_id?: string;
-          prescription?: string;
-          reason?: string;
-          recommendations?: string;
+          prescription?: string | null;
+          prescription_enc?: string | null;
+          reason?: string | null;
+          reason_enc?: string | null;
+          recommendations?: string | null;
+          recommendations_enc?: string | null;
           status?: Database["public"]["Enums"]["report_status"];
           updated_at?: string;
           validated_at?: string | null;
@@ -385,27 +400,39 @@ export type Database = {
       medical_records: {
         Row: {
           allergies: string | null;
+          allergies_enc: string | null;
           blood_type: string | null;
+          blood_type_enc: string | null;
           chronic_conditions: string | null;
+          chronic_conditions_enc: string | null;
           current_treatments: string | null;
+          current_treatments_enc: string | null;
           id: string;
           patient_id: string;
           updated_at: string;
         };
         Insert: {
           allergies?: string | null;
+          allergies_enc?: string | null;
           blood_type?: string | null;
+          blood_type_enc?: string | null;
           chronic_conditions?: string | null;
+          chronic_conditions_enc?: string | null;
           current_treatments?: string | null;
+          current_treatments_enc?: string | null;
           id?: string;
           patient_id: string;
           updated_at?: string;
         };
         Update: {
           allergies?: string | null;
+          allergies_enc?: string | null;
           blood_type?: string | null;
+          blood_type_enc?: string | null;
           chronic_conditions?: string | null;
+          chronic_conditions_enc?: string | null;
           current_treatments?: string | null;
+          current_treatments_enc?: string | null;
           id?: string;
           patient_id?: string;
           updated_at?: string;
@@ -422,9 +449,11 @@ export type Database = {
           practitioner_id: string | null;
           result_date: string;
           status: Database["public"]["Enums"]["result_status"];
-          summary: string;
+          summary: string | null;
+          summary_enc: string | null;
           title: string;
           values_json: Json | null;
+          values_json_enc: string | null;
         };
         Insert: {
           category: string;
@@ -435,9 +464,11 @@ export type Database = {
           practitioner_id?: string | null;
           result_date?: string;
           status?: Database["public"]["Enums"]["result_status"];
-          summary: string;
+          summary?: string | null;
+          summary_enc?: string | null;
           title: string;
           values_json?: Json | null;
+          values_json_enc?: string | null;
         };
         Update: {
           category?: string;
@@ -448,9 +479,11 @@ export type Database = {
           practitioner_id?: string | null;
           result_date?: string;
           status?: Database["public"]["Enums"]["result_status"];
-          summary?: string;
+          summary?: string | null;
+          summary_enc?: string | null;
           title?: string;
           values_json?: Json | null;
+          values_json_enc?: string | null;
         };
         Relationships: [
           {
@@ -641,7 +674,156 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      consultation_reports_decrypted: {
+        Row: {
+          appointment_id: string | null;
+          created_at: string | null;
+          diagnosis: string | null;
+          id: string | null;
+          observations: string | null;
+          patient_id: string | null;
+          practitioner_id: string | null;
+          prescription: string | null;
+          reason: string | null;
+          recommendations: string | null;
+          status: Database["public"]["Enums"]["report_status"] | null;
+          updated_at: string | null;
+          validated_at: string | null;
+        };
+        Insert: {
+          appointment_id?: string | null;
+          created_at?: string | null;
+          diagnosis?: never;
+          id?: string | null;
+          observations?: never;
+          patient_id?: string | null;
+          practitioner_id?: string | null;
+          prescription?: never;
+          reason?: never;
+          recommendations?: never;
+          status?: Database["public"]["Enums"]["report_status"] | null;
+          updated_at?: string | null;
+          validated_at?: string | null;
+        };
+        Update: {
+          appointment_id?: string | null;
+          created_at?: string | null;
+          diagnosis?: never;
+          id?: string | null;
+          observations?: never;
+          patient_id?: string | null;
+          practitioner_id?: string | null;
+          prescription?: never;
+          reason?: never;
+          recommendations?: never;
+          status?: Database["public"]["Enums"]["report_status"] | null;
+          updated_at?: string | null;
+          validated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "consultation_reports_appointment_id_fkey";
+            columns: ["appointment_id"];
+            isOneToOne: false;
+            referencedRelation: "appointments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "consultation_reports_practitioner_id_fkey";
+            columns: ["practitioner_id"];
+            isOneToOne: false;
+            referencedRelation: "practitioners";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      medical_records_decrypted: {
+        Row: {
+          allergies: string | null;
+          blood_type: string | null;
+          chronic_conditions: string | null;
+          current_treatments: string | null;
+          id: string | null;
+          patient_id: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          allergies?: never;
+          blood_type?: never;
+          chronic_conditions?: never;
+          current_treatments?: never;
+          id?: string | null;
+          patient_id?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          allergies?: never;
+          blood_type?: never;
+          chronic_conditions?: never;
+          current_treatments?: never;
+          id?: string | null;
+          patient_id?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      medical_results_decrypted: {
+        Row: {
+          category: string | null;
+          clinic_id: string | null;
+          created_at: string | null;
+          id: string | null;
+          patient_id: string | null;
+          practitioner_id: string | null;
+          result_date: string | null;
+          status: Database["public"]["Enums"]["result_status"] | null;
+          summary: string | null;
+          title: string | null;
+          values_json: Json | null;
+        };
+        Insert: {
+          category?: string | null;
+          clinic_id?: string | null;
+          created_at?: string | null;
+          id?: string | null;
+          patient_id?: string | null;
+          practitioner_id?: string | null;
+          result_date?: string | null;
+          status?: Database["public"]["Enums"]["result_status"] | null;
+          summary?: never;
+          title?: string | null;
+          values_json?: never;
+        };
+        Update: {
+          category?: string | null;
+          clinic_id?: string | null;
+          created_at?: string | null;
+          id?: string | null;
+          patient_id?: string | null;
+          practitioner_id?: string | null;
+          result_date?: string | null;
+          status?: Database["public"]["Enums"]["result_status"] | null;
+          summary?: never;
+          title?: string | null;
+          values_json?: never;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "medical_results_clinic_id_fkey";
+            columns: ["clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "clinics";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "medical_results_practitioner_id_fkey";
+            columns: ["practitioner_id"];
+            isOneToOne: false;
+            referencedRelation: "practitioners";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
       admin_delete_user: { Args: { _user: string }; Returns: undefined };
