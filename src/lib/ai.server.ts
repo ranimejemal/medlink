@@ -7,12 +7,20 @@ const BASE_URL = process.env["AI_BASE_URL"] ?? "https://api.openai.com/v1";
 const MODEL = process.env["AI_MODEL"] ?? "gpt-4o-mini";
 
 export const structuredRequestSchema = z.object({
-  summary: z.string().describe("Résumé clinique neutre en 1 à 3 phrases, en français, pour le personnel."),
+  summary: z
+    .string()
+    .describe("Résumé clinique neutre en 1 à 3 phrases, en français, pour le personnel."),
   urgency: z.enum(["low", "medium", "high", "urgent"]),
-  suggested_specialty: z.string().nullable().describe("Spécialité médicale la plus adaptée, ou null."),
+  suggested_specialty: z
+    .string()
+    .nullable()
+    .describe("Spécialité médicale la plus adaptée, ou null."),
   symptoms: z.array(z.string()).describe("Symptômes ou motifs mentionnés, formulations courtes."),
   duration: z.string().nullable().describe("Depuis quand, si mentionné."),
-  preferred_timing: z.string().nullable().describe("Disponibilités ou préférences du patient, si mentionnées."),
+  preferred_timing: z
+    .string()
+    .nullable()
+    .describe("Disponibilités ou préférences du patient, si mentionnées."),
 });
 export type StructuredRequest = z.infer<typeof structuredRequestSchema>;
 
@@ -41,9 +49,18 @@ export async function structureNotes(notes: string): Promise<StructureResult> {
   } catch (e) {
     console.error("structureNotes failed", e);
     const status = APICallError.isInstance(e) ? e.statusCode : undefined;
-    if (status === 429) return { ok: false, error: "Trop de demandes en ce moment. Réessayez dans quelques instants." };
-    if (status === 402) return { ok: false, error: "Le service d'assistance est temporairement indisponible (crédits épuisés)." };
-    if (status === 403) return { ok: false, error: "L'assistance n'a pas pu traiter cette demande." };
+    if (status === 429)
+      return {
+        ok: false,
+        error: "Trop de demandes en ce moment. Réessayez dans quelques instants.",
+      };
+    if (status === 402)
+      return {
+        ok: false,
+        error: "Le service d'assistance est temporairement indisponible (crédits épuisés).",
+      };
+    if (status === 403)
+      return { ok: false, error: "L'assistance n'a pas pu traiter cette demande." };
     return { ok: false, error: "L'assistance est momentanément indisponible. Veuillez réessayer." };
   }
 }

@@ -2,7 +2,19 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 
-export function ErrorScreen({ code, title, message, onRetry, action }: { code: string; title: string; message: string; onRetry?: () => void; action?: { to: string; label: string } }) {
+export function ErrorScreen({
+  code,
+  title,
+  message,
+  onRetry,
+  action,
+}: {
+  code: string;
+  title: string;
+  message: string;
+  onRetry?: () => void;
+  action?: { to: string; label: string };
+}) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       <Logo className="mb-10" />

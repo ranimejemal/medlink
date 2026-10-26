@@ -4,7 +4,15 @@ import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+export function PageHeader({
+  title,
+  description,
+  actions,
+}: {
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+}) {
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
@@ -16,7 +24,17 @@ export function PageHeader({ title, description, actions }: { title: string; des
   );
 }
 
-export function Panel({ title, action, children, className }: { title?: string; action?: ReactNode; children: ReactNode; className?: string }) {
+export function Panel({
+  title,
+  action,
+  children,
+  className,
+}: {
+  title?: string;
+  action?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <section className={cn("card-surface p-5", className)}>
       {(title || action) && (
@@ -30,7 +48,17 @@ export function Panel({ title, action, children, className }: { title?: string; 
   );
 }
 
-export function StatCard({ label, value, icon: Icon, hint }: { label: string; value: ReactNode; icon: LucideIcon; hint?: string }) {
+export function StatCard({
+  label,
+  value,
+  icon: Icon,
+  hint,
+}: {
+  label: string;
+  value: ReactNode;
+  icon: LucideIcon;
+  hint?: string;
+}) {
   return (
     <div className="card-surface flex items-start gap-4 p-5">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
@@ -45,7 +73,17 @@ export function StatCard({ label, value, icon: Icon, hint }: { label: string; va
   );
 }
 
-export function EmptyState({ title, message, icon: Icon = Inbox, action }: { title: string; message?: string; icon?: LucideIcon; action?: ReactNode }) {
+export function EmptyState({
+  title,
+  message,
+  icon: Icon = Inbox,
+  action,
+}: {
+  title: string;
+  message?: string;
+  icon?: LucideIcon;
+  action?: ReactNode;
+}) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center">
       <Icon className="h-8 w-8 text-muted-foreground" />
@@ -84,7 +122,16 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 
 export function StatusBadge({ status }: { status: string }) {
   const s = STATUS[status] ?? { label: status, cls: "bg-secondary text-secondary-foreground" };
-  return <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", s.cls)}>{s.label}</span>;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+        s.cls,
+      )}
+    >
+      {s.label}
+    </span>
+  );
 }
 
 export function DemoNotice() {
