@@ -33,12 +33,15 @@ import { Route as AuthenticatedPatientResultsRouteImport } from './routes/_authe
 import { Route as AuthenticatedPatientSecurityRouteImport } from './routes/_authenticated/patient/security'
 import { Route as AuthenticatedPractitionerAgendaRouteImport } from './routes/_authenticated/practitioner/agenda'
 import { Route as AuthenticatedPractitionerDashboardRouteImport } from './routes/_authenticated/practitioner/dashboard'
+import { Route as AuthenticatedPractitionerNotificationsRouteImport } from './routes/_authenticated/practitioner/notifications'
 import { Route as AuthenticatedPractitionerProfileRouteImport } from './routes/_authenticated/practitioner/profile'
 import { Route as AuthenticatedStaffDashboardRouteImport } from './routes/_authenticated/staff/dashboard'
 import { Route as AuthenticatedStaffSecurityRouteImport } from './routes/_authenticated/staff/security'
 import { Route as AuthenticatedStaffUsersRouteImport } from './routes/_authenticated/staff/users'
 import { Route as AuthenticatedPatientAppointmentsIndexRouteImport } from './routes/_authenticated/patient/appointments/index'
 import { Route as AuthenticatedPatientAppointmentsNewRouteImport } from './routes/_authenticated/patient/appointments/new'
+import { Route as AuthenticatedPractitionerPatientsIndexRouteImport } from './routes/_authenticated/practitioner/patients/index'
+import { Route as AuthenticatedPractitionerPatientsPatientIdRouteImport } from './routes/_authenticated/practitioner/patients/$patientId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -170,6 +173,12 @@ const AuthenticatedPractitionerDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedPractitionerRouteRoute,
   } as any)
+const AuthenticatedPractitionerNotificationsRoute =
+  AuthenticatedPractitionerNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedPractitionerRouteRoute,
+  } as any)
 const AuthenticatedPractitionerProfileRoute =
   AuthenticatedPractitionerProfileRouteImport.update({
     id: '/profile',
@@ -205,6 +214,18 @@ const AuthenticatedPatientAppointmentsNewRoute =
     path: '/appointments/new',
     getParentRoute: () => AuthenticatedPatientRouteRoute,
   } as any)
+const AuthenticatedPractitionerPatientsIndexRoute =
+  AuthenticatedPractitionerPatientsIndexRouteImport.update({
+    id: '/patients/',
+    path: '/patients/',
+    getParentRoute: () => AuthenticatedPractitionerRouteRoute,
+  } as any)
+const AuthenticatedPractitionerPatientsPatientIdRoute =
+  AuthenticatedPractitionerPatientsPatientIdRouteImport.update({
+    id: '/patients/$patientId',
+    path: '/patients/$patientId',
+    getParentRoute: () => AuthenticatedPractitionerRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -230,12 +251,15 @@ export interface FileRoutesByFullPath {
   '/patient/security': typeof AuthenticatedPatientSecurityRoute
   '/practitioner/agenda': typeof AuthenticatedPractitionerAgendaRoute
   '/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
+  '/practitioner/notifications': typeof AuthenticatedPractitionerNotificationsRoute
   '/practitioner/profile': typeof AuthenticatedPractitionerProfileRoute
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
+  '/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/patient/appointments/': typeof AuthenticatedPatientAppointmentsIndexRoute
+  '/practitioner/patients/': typeof AuthenticatedPractitionerPatientsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -261,12 +285,15 @@ export interface FileRoutesByTo {
   '/patient/security': typeof AuthenticatedPatientSecurityRoute
   '/practitioner/agenda': typeof AuthenticatedPractitionerAgendaRoute
   '/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
+  '/practitioner/notifications': typeof AuthenticatedPractitionerNotificationsRoute
   '/practitioner/profile': typeof AuthenticatedPractitionerProfileRoute
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
+  '/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/patient/appointments': typeof AuthenticatedPatientAppointmentsIndexRoute
+  '/practitioner/patients': typeof AuthenticatedPractitionerPatientsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -294,12 +321,15 @@ export interface FileRoutesById {
   '/_authenticated/patient/security': typeof AuthenticatedPatientSecurityRoute
   '/_authenticated/practitioner/agenda': typeof AuthenticatedPractitionerAgendaRoute
   '/_authenticated/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
+  '/_authenticated/practitioner/notifications': typeof AuthenticatedPractitionerNotificationsRoute
   '/_authenticated/practitioner/profile': typeof AuthenticatedPractitionerProfileRoute
   '/_authenticated/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/_authenticated/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/_authenticated/staff/users': typeof AuthenticatedStaffUsersRoute
   '/_authenticated/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
+  '/_authenticated/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/_authenticated/patient/appointments/': typeof AuthenticatedPatientAppointmentsIndexRoute
+  '/_authenticated/practitioner/patients/': typeof AuthenticatedPractitionerPatientsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -327,12 +357,15 @@ export interface FileRouteTypes {
     | '/patient/security'
     | '/practitioner/agenda'
     | '/practitioner/dashboard'
+    | '/practitioner/notifications'
     | '/practitioner/profile'
     | '/staff/dashboard'
     | '/staff/security'
     | '/staff/users'
     | '/patient/appointments/new'
+    | '/practitioner/patients/$patientId'
     | '/patient/appointments/'
+    | '/practitioner/patients/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -358,12 +391,15 @@ export interface FileRouteTypes {
     | '/patient/security'
     | '/practitioner/agenda'
     | '/practitioner/dashboard'
+    | '/practitioner/notifications'
     | '/practitioner/profile'
     | '/staff/dashboard'
     | '/staff/security'
     | '/staff/users'
     | '/patient/appointments/new'
+    | '/practitioner/patients/$patientId'
     | '/patient/appointments'
+    | '/practitioner/patients'
   id:
     | '__root__'
     | '/'
@@ -390,12 +426,15 @@ export interface FileRouteTypes {
     | '/_authenticated/patient/security'
     | '/_authenticated/practitioner/agenda'
     | '/_authenticated/practitioner/dashboard'
+    | '/_authenticated/practitioner/notifications'
     | '/_authenticated/practitioner/profile'
     | '/_authenticated/staff/dashboard'
     | '/_authenticated/staff/security'
     | '/_authenticated/staff/users'
     | '/_authenticated/patient/appointments/new'
+    | '/_authenticated/practitioner/patients/$patientId'
     | '/_authenticated/patient/appointments/'
+    | '/_authenticated/practitioner/patients/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -580,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPractitionerDashboardRouteImport
       parentRoute: typeof AuthenticatedPractitionerRouteRoute
     }
+    '/_authenticated/practitioner/notifications': {
+      id: '/_authenticated/practitioner/notifications'
+      path: '/notifications'
+      fullPath: '/practitioner/notifications'
+      preLoaderRoute: typeof AuthenticatedPractitionerNotificationsRouteImport
+      parentRoute: typeof AuthenticatedPractitionerRouteRoute
+    }
     '/_authenticated/practitioner/profile': {
       id: '/_authenticated/practitioner/profile'
       path: '/profile'
@@ -621,6 +667,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/patient/appointments/new'
       preLoaderRoute: typeof AuthenticatedPatientAppointmentsNewRouteImport
       parentRoute: typeof AuthenticatedPatientRouteRoute
+    }
+    '/_authenticated/practitioner/patients/': {
+      id: '/_authenticated/practitioner/patients/'
+      path: '/patients'
+      fullPath: '/practitioner/patients/'
+      preLoaderRoute: typeof AuthenticatedPractitionerPatientsIndexRouteImport
+      parentRoute: typeof AuthenticatedPractitionerRouteRoute
+    }
+    '/_authenticated/practitioner/patients/$patientId': {
+      id: '/_authenticated/practitioner/patients/$patientId'
+      path: '/patients/$patientId'
+      fullPath: '/practitioner/patients/$patientId'
+      preLoaderRoute: typeof AuthenticatedPractitionerPatientsPatientIdRouteImport
+      parentRoute: typeof AuthenticatedPractitionerRouteRoute
     }
   }
 }
@@ -674,7 +734,10 @@ const AuthenticatedPatientRouteRouteWithChildren =
 interface AuthenticatedPractitionerRouteRouteChildren {
   AuthenticatedPractitionerAgendaRoute: typeof AuthenticatedPractitionerAgendaRoute
   AuthenticatedPractitionerDashboardRoute: typeof AuthenticatedPractitionerDashboardRoute
+  AuthenticatedPractitionerNotificationsRoute: typeof AuthenticatedPractitionerNotificationsRoute
   AuthenticatedPractitionerProfileRoute: typeof AuthenticatedPractitionerProfileRoute
+  AuthenticatedPractitionerPatientsPatientIdRoute: typeof AuthenticatedPractitionerPatientsPatientIdRoute
+  AuthenticatedPractitionerPatientsIndexRoute: typeof AuthenticatedPractitionerPatientsIndexRoute
 }
 
 const AuthenticatedPractitionerRouteRouteChildren: AuthenticatedPractitionerRouteRouteChildren =
@@ -682,8 +745,14 @@ const AuthenticatedPractitionerRouteRouteChildren: AuthenticatedPractitionerRout
     AuthenticatedPractitionerAgendaRoute: AuthenticatedPractitionerAgendaRoute,
     AuthenticatedPractitionerDashboardRoute:
       AuthenticatedPractitionerDashboardRoute,
+    AuthenticatedPractitionerNotificationsRoute:
+      AuthenticatedPractitionerNotificationsRoute,
     AuthenticatedPractitionerProfileRoute:
       AuthenticatedPractitionerProfileRoute,
+    AuthenticatedPractitionerPatientsPatientIdRoute:
+      AuthenticatedPractitionerPatientsPatientIdRoute,
+    AuthenticatedPractitionerPatientsIndexRoute:
+      AuthenticatedPractitionerPatientsIndexRoute,
   }
 
 const AuthenticatedPractitionerRouteRouteWithChildren =
