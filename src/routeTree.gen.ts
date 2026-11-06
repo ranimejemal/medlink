@@ -27,7 +27,9 @@ import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin/security'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient/dashboard'
+import { Route as AuthenticatedPatientProfileRouteImport } from './routes/_authenticated/patient/profile'
 import { Route as AuthenticatedPatientRequestRouteImport } from './routes/_authenticated/patient/request'
+import { Route as AuthenticatedPatientResultsRouteImport } from './routes/_authenticated/patient/results'
 import { Route as AuthenticatedPatientSecurityRouteImport } from './routes/_authenticated/patient/security'
 import { Route as AuthenticatedPractitionerAgendaRouteImport } from './routes/_authenticated/practitioner/agenda'
 import { Route as AuthenticatedPractitionerDashboardRouteImport } from './routes/_authenticated/practitioner/dashboard'
@@ -132,10 +134,22 @@ const AuthenticatedPatientDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedPatientRouteRoute,
   } as any)
+const AuthenticatedPatientProfileRoute =
+  AuthenticatedPatientProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedPatientRouteRoute,
+  } as any)
 const AuthenticatedPatientRequestRoute =
   AuthenticatedPatientRequestRouteImport.update({
     id: '/request',
     path: '/request',
+    getParentRoute: () => AuthenticatedPatientRouteRoute,
+  } as any)
+const AuthenticatedPatientResultsRoute =
+  AuthenticatedPatientResultsRouteImport.update({
+    id: '/results',
+    path: '/results',
     getParentRoute: () => AuthenticatedPatientRouteRoute,
   } as any)
 const AuthenticatedPatientSecurityRoute =
@@ -210,7 +224,9 @@ export interface FileRoutesByFullPath {
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/patient/request': typeof AuthenticatedPatientRequestRoute
+  '/patient/results': typeof AuthenticatedPatientResultsRoute
   '/patient/security': typeof AuthenticatedPatientSecurityRoute
   '/practitioner/agenda': typeof AuthenticatedPractitionerAgendaRoute
   '/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
@@ -239,7 +255,9 @@ export interface FileRoutesByTo {
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/patient/request': typeof AuthenticatedPatientRequestRoute
+  '/patient/results': typeof AuthenticatedPatientResultsRoute
   '/patient/security': typeof AuthenticatedPatientSecurityRoute
   '/practitioner/agenda': typeof AuthenticatedPractitionerAgendaRoute
   '/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
@@ -270,7 +288,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/_authenticated/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/_authenticated/patient/request': typeof AuthenticatedPatientRequestRoute
+  '/_authenticated/patient/results': typeof AuthenticatedPatientResultsRoute
   '/_authenticated/patient/security': typeof AuthenticatedPatientSecurityRoute
   '/_authenticated/practitioner/agenda': typeof AuthenticatedPractitionerAgendaRoute
   '/_authenticated/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
@@ -301,7 +321,9 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/users'
     | '/patient/dashboard'
+    | '/patient/profile'
     | '/patient/request'
+    | '/patient/results'
     | '/patient/security'
     | '/practitioner/agenda'
     | '/practitioner/dashboard'
@@ -330,7 +352,9 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/users'
     | '/patient/dashboard'
+    | '/patient/profile'
     | '/patient/request'
+    | '/patient/results'
     | '/patient/security'
     | '/practitioner/agenda'
     | '/practitioner/dashboard'
@@ -360,7 +384,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/security'
     | '/_authenticated/admin/users'
     | '/_authenticated/patient/dashboard'
+    | '/_authenticated/patient/profile'
     | '/_authenticated/patient/request'
+    | '/_authenticated/patient/results'
     | '/_authenticated/patient/security'
     | '/_authenticated/practitioner/agenda'
     | '/_authenticated/practitioner/dashboard'
@@ -512,11 +538,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPatientDashboardRouteImport
       parentRoute: typeof AuthenticatedPatientRouteRoute
     }
+    '/_authenticated/patient/profile': {
+      id: '/_authenticated/patient/profile'
+      path: '/profile'
+      fullPath: '/patient/profile'
+      preLoaderRoute: typeof AuthenticatedPatientProfileRouteImport
+      parentRoute: typeof AuthenticatedPatientRouteRoute
+    }
     '/_authenticated/patient/request': {
       id: '/_authenticated/patient/request'
       path: '/request'
       fullPath: '/patient/request'
       preLoaderRoute: typeof AuthenticatedPatientRequestRouteImport
+      parentRoute: typeof AuthenticatedPatientRouteRoute
+    }
+    '/_authenticated/patient/results': {
+      id: '/_authenticated/patient/results'
+      path: '/results'
+      fullPath: '/patient/results'
+      preLoaderRoute: typeof AuthenticatedPatientResultsRouteImport
       parentRoute: typeof AuthenticatedPatientRouteRoute
     }
     '/_authenticated/patient/security': {
@@ -605,7 +645,9 @@ const AuthenticatedAdminRouteRouteWithChildren =
 
 interface AuthenticatedPatientRouteRouteChildren {
   AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
+  AuthenticatedPatientProfileRoute: typeof AuthenticatedPatientProfileRoute
   AuthenticatedPatientRequestRoute: typeof AuthenticatedPatientRequestRoute
+  AuthenticatedPatientResultsRoute: typeof AuthenticatedPatientResultsRoute
   AuthenticatedPatientSecurityRoute: typeof AuthenticatedPatientSecurityRoute
   AuthenticatedPatientAppointmentsNewRoute: typeof AuthenticatedPatientAppointmentsNewRoute
   AuthenticatedPatientAppointmentsIndexRoute: typeof AuthenticatedPatientAppointmentsIndexRoute
@@ -614,7 +656,9 @@ interface AuthenticatedPatientRouteRouteChildren {
 const AuthenticatedPatientRouteRouteChildren: AuthenticatedPatientRouteRouteChildren =
   {
     AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
+    AuthenticatedPatientProfileRoute: AuthenticatedPatientProfileRoute,
     AuthenticatedPatientRequestRoute: AuthenticatedPatientRequestRoute,
+    AuthenticatedPatientResultsRoute: AuthenticatedPatientResultsRoute,
     AuthenticatedPatientSecurityRoute: AuthenticatedPatientSecurityRoute,
     AuthenticatedPatientAppointmentsNewRoute:
       AuthenticatedPatientAppointmentsNewRoute,
