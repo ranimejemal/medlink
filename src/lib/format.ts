@@ -12,3 +12,5 @@ export const drName = (
 ) => (p ? `${p.title ?? "Dr"} ${p.first_name} ${p.last_name}` : "—");
 export const fullName = (p?: { first_name: string; last_name: string } | null) =>
   p ? `${p.first_name} ${p.last_name}`.trim() || "—" : "—";
+// Short, stable file number shown to practitioners: the start of the medical record id (US-22).
+export const fileNumber = (recordId: string) => recordId.slice(0, 8).toUpperCase();

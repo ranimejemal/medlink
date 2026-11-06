@@ -899,6 +899,10 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       is_my_patient: { Args: { _patient: string }; Returns: boolean };
       is_staff: { Args: never; Returns: boolean };
+      log_record_access: {
+        Args: { _ip?: string; _patient: string };
+        Returns: boolean;
+      };
       notify: {
         Args: { _message: string; _title: string; _type: string; _user: string };
         Returns: undefined;
