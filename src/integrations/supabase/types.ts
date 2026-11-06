@@ -605,6 +605,8 @@ export type Database = {
       };
       profiles: {
         Row: {
+          consent_at: string | null;
+          consent_version: string | null;
           created_at: string;
           date_of_birth: string | null;
           email: string;
@@ -612,10 +614,14 @@ export type Database = {
           id: string;
           is_active: boolean;
           last_name: string;
+          notify_email: boolean;
+          notify_sms: boolean;
           phone: string | null;
           updated_at: string;
         };
         Insert: {
+          consent_at?: string | null;
+          consent_version?: string | null;
           created_at?: string;
           date_of_birth?: string | null;
           email: string;
@@ -623,10 +629,14 @@ export type Database = {
           id: string;
           is_active?: boolean;
           last_name?: string;
+          notify_email?: boolean;
+          notify_sms?: boolean;
           phone?: string | null;
           updated_at?: string;
         };
         Update: {
+          consent_at?: string | null;
+          consent_version?: string | null;
           created_at?: string;
           date_of_birth?: string | null;
           email?: string;
@@ -634,6 +644,8 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           last_name?: string;
+          notify_email?: boolean;
+          notify_sms?: boolean;
           phone?: string | null;
           updated_at?: string;
         };

@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { friendlyError } from "@/lib/errors";
 import { passwordSchema, PasswordRules } from "@/components/medlink/PasswordRules";
 import { PasswordInput } from "@/components/medlink/PasswordInput";
+import { PrivacyPolicyDialog, PRIVACY_POLICY_VERSION } from "@/components/medlink/PrivacyPolicy";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -84,6 +85,9 @@ function RegisterPage() {
           first_name: parsed.data.first_name,
           last_name: parsed.data.last_name,
           phone: parsed.data.phone.replace(/\s+/g, "").replace(/^(\d{8})$/, "+216$1"),
+          // US-04: the server records the consent date (handle_new_user), not the browser.
+          consent: true,
+          consent_version: PRIVACY_POLICY_VERSION,
         },
       },
     });
@@ -263,8 +267,10 @@ function RegisterPage() {
             onCheckedChange={(v) => setForm({ ...form, consent: v === true })}
             className="mt-0.5"
           />
-          J'accepte que mes données de santé soient traitées par MedLink conformément à la loi
-          organique n° 2004-63 sur la protection des données personnelles.
+          <span>
+            J'accepte que mes données de santé soient traitées par MedLink conformément à la loi
+            organique n° 2004-63 sur la protection des données personnelles. <PrivacyPolicyDialog />
+          </span>
         </label>
         <Button type="submit" className="h-11 w-full" disabled={loading}>
           {loading && <Loader2 className="h-4 w-4 animate-spin" />} Créer mon compte
