@@ -27,6 +27,7 @@ import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin/security'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient/dashboard'
+import { Route as AuthenticatedPatientDocumentsRouteImport } from './routes/_authenticated/patient/documents'
 import { Route as AuthenticatedPatientProfileRouteImport } from './routes/_authenticated/patient/profile'
 import { Route as AuthenticatedPatientRequestRouteImport } from './routes/_authenticated/patient/request'
 import { Route as AuthenticatedPatientResultsRouteImport } from './routes/_authenticated/patient/results'
@@ -38,6 +39,7 @@ import { Route as AuthenticatedPractitionerProfileRouteImport } from './routes/_
 import { Route as AuthenticatedStaffDashboardRouteImport } from './routes/_authenticated/staff/dashboard'
 import { Route as AuthenticatedStaffSecurityRouteImport } from './routes/_authenticated/staff/security'
 import { Route as AuthenticatedStaffUsersRouteImport } from './routes/_authenticated/staff/users'
+import { Route as ApiCronAppointmentEmailsRouteImport } from './routes/api/cron/appointment-emails'
 import { Route as AuthenticatedPatientAppointmentsIndexRouteImport } from './routes/_authenticated/patient/appointments/index'
 import { Route as AuthenticatedPatientAppointmentsNewRouteImport } from './routes/_authenticated/patient/appointments/new'
 import { Route as AuthenticatedPractitionerPatientsIndexRouteImport } from './routes/_authenticated/practitioner/patients/index'
@@ -137,6 +139,12 @@ const AuthenticatedPatientDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedPatientRouteRoute,
   } as any)
+const AuthenticatedPatientDocumentsRoute =
+  AuthenticatedPatientDocumentsRouteImport.update({
+    id: '/documents',
+    path: '/documents',
+    getParentRoute: () => AuthenticatedPatientRouteRoute,
+  } as any)
 const AuthenticatedPatientProfileRoute =
   AuthenticatedPatientProfileRouteImport.update({
     id: '/profile',
@@ -202,6 +210,12 @@ const AuthenticatedStaffUsersRoute = AuthenticatedStaffUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedStaffRouteRoute,
 } as any)
+const ApiCronAppointmentEmailsRoute =
+  ApiCronAppointmentEmailsRouteImport.update({
+    id: '/api/cron/appointment-emails',
+    path: '/api/cron/appointment-emails',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedPatientAppointmentsIndexRoute =
   AuthenticatedPatientAppointmentsIndexRouteImport.update({
     id: '/appointments/',
@@ -245,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/patient/documents': typeof AuthenticatedPatientDocumentsRoute
   '/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/patient/request': typeof AuthenticatedPatientRequestRoute
   '/patient/results': typeof AuthenticatedPatientResultsRoute
@@ -256,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
+  '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
   '/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/patient/appointments/': typeof AuthenticatedPatientAppointmentsIndexRoute
@@ -279,6 +295,7 @@ export interface FileRoutesByTo {
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/patient/documents': typeof AuthenticatedPatientDocumentsRoute
   '/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/patient/request': typeof AuthenticatedPatientRequestRoute
   '/patient/results': typeof AuthenticatedPatientResultsRoute
@@ -290,6 +307,7 @@ export interface FileRoutesByTo {
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
+  '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
   '/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/patient/appointments': typeof AuthenticatedPatientAppointmentsIndexRoute
@@ -315,6 +333,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
+  '/_authenticated/patient/documents': typeof AuthenticatedPatientDocumentsRoute
   '/_authenticated/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/_authenticated/patient/request': typeof AuthenticatedPatientRequestRoute
   '/_authenticated/patient/results': typeof AuthenticatedPatientResultsRoute
@@ -326,6 +345,7 @@ export interface FileRoutesById {
   '/_authenticated/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/_authenticated/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/_authenticated/staff/users': typeof AuthenticatedStaffUsersRoute
+  '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
   '/_authenticated/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
   '/_authenticated/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/_authenticated/patient/appointments/': typeof AuthenticatedPatientAppointmentsIndexRoute
@@ -351,6 +371,7 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/users'
     | '/patient/dashboard'
+    | '/patient/documents'
     | '/patient/profile'
     | '/patient/request'
     | '/patient/results'
@@ -362,6 +383,7 @@ export interface FileRouteTypes {
     | '/staff/dashboard'
     | '/staff/security'
     | '/staff/users'
+    | '/api/cron/appointment-emails'
     | '/patient/appointments/new'
     | '/practitioner/patients/$patientId'
     | '/patient/appointments/'
@@ -385,6 +407,7 @@ export interface FileRouteTypes {
     | '/admin/security'
     | '/admin/users'
     | '/patient/dashboard'
+    | '/patient/documents'
     | '/patient/profile'
     | '/patient/request'
     | '/patient/results'
@@ -396,6 +419,7 @@ export interface FileRouteTypes {
     | '/staff/dashboard'
     | '/staff/security'
     | '/staff/users'
+    | '/api/cron/appointment-emails'
     | '/patient/appointments/new'
     | '/practitioner/patients/$patientId'
     | '/patient/appointments'
@@ -420,6 +444,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/security'
     | '/_authenticated/admin/users'
     | '/_authenticated/patient/dashboard'
+    | '/_authenticated/patient/documents'
     | '/_authenticated/patient/profile'
     | '/_authenticated/patient/request'
     | '/_authenticated/patient/results'
@@ -431,6 +456,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/dashboard'
     | '/_authenticated/staff/security'
     | '/_authenticated/staff/users'
+    | '/api/cron/appointment-emails'
     | '/_authenticated/patient/appointments/new'
     | '/_authenticated/practitioner/patients/$patientId'
     | '/_authenticated/patient/appointments/'
@@ -447,6 +473,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SessionExpiredRoute: typeof SessionExpiredRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
+  ApiCronAppointmentEmailsRoute: typeof ApiCronAppointmentEmailsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -577,6 +604,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPatientDashboardRouteImport
       parentRoute: typeof AuthenticatedPatientRouteRoute
     }
+    '/_authenticated/patient/documents': {
+      id: '/_authenticated/patient/documents'
+      path: '/documents'
+      fullPath: '/patient/documents'
+      preLoaderRoute: typeof AuthenticatedPatientDocumentsRouteImport
+      parentRoute: typeof AuthenticatedPatientRouteRoute
+    }
     '/_authenticated/patient/profile': {
       id: '/_authenticated/patient/profile'
       path: '/profile'
@@ -654,6 +688,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffUsersRouteImport
       parentRoute: typeof AuthenticatedStaffRouteRoute
     }
+    '/api/cron/appointment-emails': {
+      id: '/api/cron/appointment-emails'
+      path: '/api/cron/appointment-emails'
+      fullPath: '/api/cron/appointment-emails'
+      preLoaderRoute: typeof ApiCronAppointmentEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/patient/appointments/': {
       id: '/_authenticated/patient/appointments/'
       path: '/appointments'
@@ -705,6 +746,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
 
 interface AuthenticatedPatientRouteRouteChildren {
   AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
+  AuthenticatedPatientDocumentsRoute: typeof AuthenticatedPatientDocumentsRoute
   AuthenticatedPatientProfileRoute: typeof AuthenticatedPatientProfileRoute
   AuthenticatedPatientRequestRoute: typeof AuthenticatedPatientRequestRoute
   AuthenticatedPatientResultsRoute: typeof AuthenticatedPatientResultsRoute
@@ -716,6 +758,7 @@ interface AuthenticatedPatientRouteRouteChildren {
 const AuthenticatedPatientRouteRouteChildren: AuthenticatedPatientRouteRouteChildren =
   {
     AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
+    AuthenticatedPatientDocumentsRoute: AuthenticatedPatientDocumentsRoute,
     AuthenticatedPatientProfileRoute: AuthenticatedPatientProfileRoute,
     AuthenticatedPatientRequestRoute: AuthenticatedPatientRequestRoute,
     AuthenticatedPatientResultsRoute: AuthenticatedPatientResultsRoute,
@@ -808,6 +851,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SessionExpiredRoute: SessionExpiredRoute,
   UnauthorizedRoute: UnauthorizedRoute,
+  ApiCronAppointmentEmailsRoute: ApiCronAppointmentEmailsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

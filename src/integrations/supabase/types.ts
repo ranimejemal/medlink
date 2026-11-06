@@ -116,12 +116,14 @@ export type Database = {
           cancelled_at: string | null;
           cancelled_by: string | null;
           clinic_id: string;
+          confirmation_sent_at: string | null;
           created_at: string;
           ends_at: string;
           id: string;
           patient_id: string;
           practitioner_id: string;
           reason: string | null;
+          reminder_sent_at: string | null;
           slot_id: string | null;
           starts_at: string;
           status: Database["public"]["Enums"]["appointment_status"];
@@ -131,12 +133,14 @@ export type Database = {
           cancelled_at?: string | null;
           cancelled_by?: string | null;
           clinic_id: string;
+          confirmation_sent_at?: string | null;
           created_at?: string;
           ends_at: string;
           id?: string;
           patient_id: string;
           practitioner_id: string;
           reason?: string | null;
+          reminder_sent_at?: string | null;
           slot_id?: string | null;
           starts_at: string;
           status?: Database["public"]["Enums"]["appointment_status"];
@@ -146,12 +150,14 @@ export type Database = {
           cancelled_at?: string | null;
           cancelled_by?: string | null;
           clinic_id?: string;
+          confirmation_sent_at?: string | null;
           created_at?: string;
           ends_at?: string;
           id?: string;
           patient_id?: string;
           practitioner_id?: string;
           reason?: string | null;
+          reminder_sent_at?: string | null;
           slot_id?: string | null;
           starts_at?: string;
           status?: Database["public"]["Enums"]["appointment_status"];
@@ -880,6 +886,24 @@ export type Database = {
         Returns: string;
       };
       cancel_appointment: { Args: { _id: string }; Returns: undefined };
+      claim_appointment_emails: {
+        Args: { _limit?: number };
+        Returns: {
+          appointment_id: string;
+          clinic_address: string;
+          clinic_city: string;
+          clinic_name: string;
+          clinic_phone: string;
+          email: string;
+          ends_at: string;
+          first_name: string;
+          kind: string;
+          notify_email: boolean;
+          patient_id: string;
+          practitioner: string;
+          starts_at: string;
+        }[];
+      };
       complete_appointment: {
         Args: {
           _id: string;

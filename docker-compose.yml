@@ -19,6 +19,22 @@ services:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+  # US-08 / US-12 / US-48: every minute, asks the app to send confirmations and reminders.
+  cron:
+    image: curlimages/curl:8.11.1
+    restart: unless-stopped
+    depends_on: [app]
+    environment:
+      CRON_SECRET: ${CRON_SECRET}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          sleep 60
+          curl -sS -X POST -H "Authorization: Bearer $$CRON_SECRET" http://app:3000/api/cron/appointment-emails
+          echo
+        done
 volumes:
   caddy_data:
   caddy_config:
