@@ -37,3 +37,17 @@ dist-ssr
 !.env.example
 
 supabase/.temp/
+.env
+.env.local
+medlink-mobile/.env
+dist/
+node_modules/
+.expo/
+
+.env
+.env.local
+**/.env
+**/.env.local
+**/node_modules/
+**/dist/
+**/.expo/
