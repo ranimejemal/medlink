@@ -23,6 +23,7 @@ espace patient, espace praticien, back-office administratif et journal d'audit.
 11. [Travailler en équipe avec Git](#11-travailler-en-équipe-avec-git)
 12. [Déploiement sur le VPS](#12-déploiement-sur-le-vps)
 13. [État d'avancement](#13-état-davancement)
+14. [Documentation des fonctionnalités](#documentation-des-fonctionnalités)
 
 ---
 
@@ -285,3 +286,33 @@ agenda et définition des disponibilités du praticien, comptes rendus, pages d'
 (utilisateurs, praticiens, cliniques, statistiques, journal d'audit), rappels automatiques, intégration continue.
 
 Mettez cette section à jour à chaque user story terminée.
+
+---
+
+## Documentation des fonctionnalités
+
+### US-38 — Maintenance annoncée
+
+La fonctionnalité permet de préparer des annonces de maintenance
+et de les afficher aux utilisateurs MedLink.
+
+Documentation détaillée :
+[US-38 — Maintenance annoncée](docs/maintenance.md)
+
+**État :** développement local et test d'affichage réalisés.
+Intégration Supabase et tests administrateur en attente.
+
+### US-63 — Performance des pages
+
+Des mesures de performance ont été réalisées avec Google Lighthouse
+sur la page de connexion MedLink.
+
+- Développement : 94/100
+- Production locale : 93/100
+- Build production : réussi
+
+Documentation détaillée :
+[US-63 — Performance des pages](docs/performance.md)
+
+**État :** mesures initiales réalisées.
+Tests des autres pages et optimisations à poursuivre.

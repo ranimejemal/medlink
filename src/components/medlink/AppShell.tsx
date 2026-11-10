@@ -1,3 +1,4 @@
+import { MaintenanceBanner } from "./MaintenanceBanner";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
@@ -18,6 +19,7 @@ import {
   Stethoscope,
   LogOut,
   Menu,
+  Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +52,7 @@ const NAV: Record<AppRole, NavItem[]> = {
   admin: [
     { to: "/admin/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
     { to: "/admin/users", label: "Utilisateurs", icon: Users },
+    { to: "/admin/maintenance", label: "Maintenance", icon: Wrench },
     { to: "/admin/practitioners", label: "Praticiens", icon: Stethoscope },
     { to: "/admin/clinics", label: "Cliniques", icon: Building2 },
     { to: "/admin/statistics", label: "Statistiques", icon: BarChart3 },
@@ -205,7 +208,10 @@ export function AppShell({ role, children }: { role: AppRole; children: ReactNod
             </div>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-8">
+          <MaintenanceBanner />
+          {children}
+        </main>
       </div>
     </div>
   );
