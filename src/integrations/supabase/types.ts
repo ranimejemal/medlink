@@ -33,6 +33,36 @@ export type Database = {
   };
   public: {
     Tables: {
+      maintenance_announcements: {
+        Row: {
+          created_at: string;
+          ends_at: string;
+          id: string;
+          is_active: boolean;
+          message: string;
+          starts_at: string;
+          title: string;
+        };
+        Insert: {
+          created_at?: string;
+          ends_at: string;
+          id?: string;
+          is_active?: boolean;
+          message: string;
+          starts_at: string;
+          title: string;
+        };
+        Update: {
+          created_at?: string;
+          ends_at?: string;
+          id?: string;
+          is_active?: boolean;
+          message?: string;
+          starts_at?: string;
+          title?: string;
+        };
+        Relationships: [];
+      };
       account_invitations: {
         Row: {
           created_at: string;
