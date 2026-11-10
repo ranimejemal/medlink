@@ -4,9 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Wrench } from "lucide-react";
 import { PageHeader, Panel } from "@/components/medlink/ui";
 import { saveMaintenanceDemo } from "@/lib/maintenance-demo";
-export const Route = createFileRoute(
-  "/_authenticated/admin/maintenance"
-)({
+export const Route = createFileRoute("/_authenticated/admin/maintenance")({
   component: MaintenancePage,
 });
 
@@ -40,17 +38,17 @@ function MaintenancePage() {
     }
 
     const announcement = {
-  title: title.trim(),
-  message: message.trim(),
-  startsAt,
-  endsAt,
-};
+      title: title.trim(),
+      message: message.trim(),
+      startsAt,
+      endsAt,
+    };
 
-setDraft(announcement);
+    setDraft(announcement);
 
-if (import.meta.env.DEV) {
-  saveMaintenanceDemo(announcement);
-}
+    if (import.meta.env.DEV) {
+      saveMaintenanceDemo(announcement);
+    }
   }
 
   return (
@@ -149,17 +147,12 @@ if (import.meta.env.DEV) {
 
             <p className="whitespace-pre-wrap text-sm">{draft.message}</p>
 
-            <p className="text-sm">
-              Début : {new Date(draft.startsAt).toLocaleString("fr-FR")}
-            </p>
+            <p className="text-sm">Début : {new Date(draft.startsAt).toLocaleString("fr-FR")}</p>
 
-            <p className="text-sm">
-              Fin : {new Date(draft.endsAt).toLocaleString("fr-FR")}
-            </p>
+            <p className="text-sm">Fin : {new Date(draft.endsAt).toLocaleString("fr-FR")}</p>
 
             <p className="text-xs text-muted-foreground">
-              Mode prévisualisation : aucune annonce n'est enregistrée
-              dans Supabase.
+              Mode prévisualisation : aucune annonce n'est enregistrée dans Supabase.
             </p>
           </div>
         </Panel>

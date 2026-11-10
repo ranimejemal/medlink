@@ -24,6 +24,7 @@ espace patient, espace praticien, back-office administratif et journal d'audit.
 12. [Déploiement sur le VPS](#12-déploiement-sur-le-vps)
 13. [État d'avancement](#13-état-davancement)
 14. [Documentation des fonctionnalités](#documentation-des-fonctionnalités)
+
 ---
 
 ## 1. Technologies
@@ -285,7 +286,6 @@ agenda et définition des disponibilités du praticien, comptes rendus, pages d'
 (utilisateurs, praticiens, cliniques, statistiques, journal d'audit), rappels automatiques, intégration continue.
 
 Mettez cette section à jour à chaque user story terminée.
-
 
 ---
 

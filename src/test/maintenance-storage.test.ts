@@ -1,9 +1,5 @@
-
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  getMaintenanceDemo,
-  saveMaintenanceDemo,
-} from "@/lib/maintenance-demo";
+import { getMaintenanceDemo, saveMaintenanceDemo } from "@/lib/maintenance-demo";
 
 describe("US-38 — Stockage local des annonces", () => {
   beforeEach(() => {
@@ -28,10 +24,7 @@ describe("US-38 — Stockage local des annonces", () => {
   });
 
   it("retourne null si les données sont invalides", () => {
-    localStorage.setItem(
-      "medlink-maintenance-demo",
-      "données-invalides"
-    );
+    localStorage.setItem("medlink-maintenance-demo", "données-invalides");
 
     expect(getMaintenanceDemo()).toBeNull();
   });

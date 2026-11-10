@@ -1,4 +1,3 @@
-
 export type MaintenanceAnnouncement = {
   title: string;
   message: string;
@@ -8,13 +7,8 @@ export type MaintenanceAnnouncement = {
 
 const STORAGE_KEY = "medlink-maintenance-demo";
 
-export function saveMaintenanceDemo(
-  announcement: MaintenanceAnnouncement
-) {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(announcement)
-  );
+export function saveMaintenanceDemo(announcement: MaintenanceAnnouncement) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(announcement));
 
   window.dispatchEvent(new Event("maintenance-demo-updated"));
 }

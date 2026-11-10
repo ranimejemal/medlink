@@ -1,14 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import {
-  getMaintenanceDemo,
-  type MaintenanceAnnouncement,
-} from "@/lib/maintenance-demo";
+import { getMaintenanceDemo, type MaintenanceAnnouncement } from "@/lib/maintenance-demo";
 
 export function MaintenanceBanner() {
-  const [announcement, setAnnouncement] =
-    useState<MaintenanceAnnouncement | null>(null);
+  const [announcement, setAnnouncement] = useState<MaintenanceAnnouncement | null>(null);
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -43,20 +38,15 @@ export function MaintenanceBanner() {
         <div>
           <p className="font-semibold">{announcement.title}</p>
 
-          <p className="mt-1 whitespace-pre-wrap text-sm">
-            {announcement.message}
-          </p>
+          <p className="mt-1 whitespace-pre-wrap text-sm">{announcement.message}</p>
 
           <p className="mt-2 text-xs">
-            Du{" "}
-            {new Date(announcement.startsAt).toLocaleString("fr-FR")}
+            Du {new Date(announcement.startsAt).toLocaleString("fr-FR")}
             {" au "}
             {new Date(announcement.endsAt).toLocaleString("fr-FR")}
           </p>
 
-          <p className="mt-2 text-xs">
-            Démonstration locale uniquement — annonce non publiée.
-          </p>
+          <p className="mt-2 text-xs">Démonstration locale uniquement — annonce non publiée.</p>
         </div>
       </div>
     </div>

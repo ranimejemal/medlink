@@ -19,14 +19,14 @@ Google Lighthouse, intégré à Chrome DevTools.
 
 ## Résultats
 
-| Indicateur | Développement | Production locale |
-|---|---:|---:|
-| Performance | 94/100 | 93/100 |
-| First Contentful Paint | 0,8 s | 1,2 s |
-| Largest Contentful Paint | 0,9 s | 1,3 s |
-| Total Blocking Time | 130 ms | 0 ms |
-| Cumulative Layout Shift | 0 | 0 |
-| Speed Index | 1,7 s | 1,2 s |
+| Indicateur               | Développement | Production locale |
+| ------------------------ | ------------: | ----------------: |
+| Performance              |        94/100 |            93/100 |
+| First Contentful Paint   |         0,8 s |             1,2 s |
+| Largest Contentful Paint |         0,9 s |             1,3 s |
+| Total Blocking Time      |        130 ms |              0 ms |
+| Cumulative Layout Shift  |             0 |                 0 |
+| Speed Index              |         1,7 s |             1,2 s |
 
 ## Analyse
 
@@ -52,7 +52,6 @@ Les résultats restent indicatifs, car ils proviennent d'une seule exécution pa
 2. Identifier les éventuels problèmes dans les recommandations Lighthouse.
 3. Répéter les mesures pour obtenir des résultats plus fiables.
 4. Effectuer les optimisations nécessaires et comparer les résultats avant/après.
-
 
 ## Tableau de bord Patient — Production
 
