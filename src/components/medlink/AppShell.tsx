@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import {
+  Phone,
   LayoutDashboard,
   CalendarDays,
   CalendarPlus,
@@ -61,6 +62,7 @@ const NAV: Record<AppRole, NavItem[]> = {
   ],
   staff: [
     { to: "/staff/dashboard", label: "Rendez-vous", icon: CalendarDays },
+    { to: "/staff/book", label: "Nouveau rendez-vous", icon: Phone },
     { to: "/staff/users", label: "Comptes", icon: Users },
     { to: "/staff/security", label: "Sécurité", icon: ShieldCheck },
   ],

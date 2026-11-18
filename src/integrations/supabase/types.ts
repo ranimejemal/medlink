@@ -1,4 +1,4 @@
-﻿export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -6,63 +6,8 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.18";
   };
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
-      maintenance_announcements: {
-        Row: {
-          created_at: string;
-          ends_at: string;
-          id: string;
-          is_active: boolean;
-          message: string;
-          starts_at: string;
-          title: string;
-        };
-        Insert: {
-          created_at?: string;
-          ends_at: string;
-          id?: string;
-          is_active?: boolean;
-          message: string;
-          starts_at: string;
-          title: string;
-        };
-        Update: {
-          created_at?: string;
-          ends_at?: string;
-          id?: string;
-          is_active?: boolean;
-          message?: string;
-          starts_at?: string;
-          title?: string;
-        };
-        Relationships: [];
-      };
       account_invitations: {
         Row: {
           created_at: string;
@@ -87,6 +32,27 @@ export type Database = {
           id?: string;
           practitioner_id?: string | null;
           role?: Database["public"]["Enums"]["app_role"];
+        };
+        Relationships: [];
+      };
+      appointment_reminders: {
+        Row: {
+          appointment_id: string;
+          channel: string;
+          kind: string;
+          sent_at: string;
+        };
+        Insert: {
+          appointment_id: string;
+          channel?: string;
+          kind: string;
+          sent_at?: string;
+        };
+        Update: {
+          appointment_id?: string;
+          channel?: string;
+          kind?: string;
+          sent_at?: string;
         };
         Relationships: [];
       };
@@ -143,6 +109,7 @@ export type Database = {
       };
       appointments: {
         Row: {
+          booked_by_staff: string | null;
           cancelled_at: string | null;
           cancelled_by: string | null;
           clinic_id: string;
@@ -160,6 +127,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          booked_by_staff?: string | null;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
           clinic_id: string;
@@ -177,6 +145,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          booked_by_staff?: string | null;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
           clinic_id?: string;
@@ -430,6 +399,36 @@ export type Database = {
           id?: string;
           ip_address?: string | null;
           success?: boolean;
+        };
+        Relationships: [];
+      };
+      maintenance_announcements: {
+        Row: {
+          created_at: string;
+          ends_at: string;
+          id: string;
+          is_active: boolean;
+          message: string;
+          starts_at: string;
+          title: string;
+        };
+        Insert: {
+          created_at?: string;
+          ends_at: string;
+          id?: string;
+          is_active?: boolean;
+          message: string;
+          starts_at: string;
+          title: string;
+        };
+        Update: {
+          created_at?: string;
+          ends_at?: string;
+          id?: string;
+          is_active?: boolean;
+          message?: string;
+          starts_at?: string;
+          title?: string;
         };
         Relationships: [];
       };
@@ -942,6 +941,7 @@ export type Database = {
         Returns: undefined;
       };
       current_practitioner_id: { Args: never; Returns: string };
+      delete_my_account: { Args: never; Returns: undefined };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -953,6 +953,13 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       is_my_patient: { Args: { _patient: string }; Returns: boolean };
       is_staff: { Args: never; Returns: boolean };
+      list_doctors: {
+        Args: never;
+        Returns: {
+          full_name: string;
+          id: string;
+        }[];
+      };
       log_record_access: {
         Args: { _ip?: string; _patient: string };
         Returns: boolean;
@@ -965,6 +972,10 @@ export type Database = {
         Args: { _id: string; _new_slot: string };
         Returns: string;
       };
+      staff_book_appointment: {
+        Args: { _patient: string; _reason: string; _slot_id: string };
+        Returns: string;
+      };
       staff_list_users: {
         Args: never;
         Returns: {
@@ -975,6 +986,17 @@ export type Database = {
           is_active: boolean;
           last_name: string;
           roles: Database["public"]["Enums"]["app_role"][];
+        }[];
+      };
+      staff_search_patients: {
+        Args: { _q: string };
+        Returns: {
+          date_of_birth: string;
+          email: string;
+          first_name: string;
+          id: string;
+          last_name: string;
+          phone: string;
         }[];
       };
       validate_report: { Args: { _id: string }; Returns: undefined };
@@ -1115,9 +1137,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["patient", "practitioner", "admin", "staff"],
