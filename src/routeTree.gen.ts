@@ -25,6 +25,7 @@ import { Route as AuthenticatedPractitionerRouteRouteImport } from './routes/_au
 import { Route as AuthenticatedStaffRouteRouteImport } from './routes/_authenticated/staff/route'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin/dashboard'
 import { Route as AuthenticatedAdminMaintenanceRouteImport } from './routes/_authenticated/admin/maintenance'
+import { Route as AuthenticatedAdminPractitionersRouteImport } from './routes/_authenticated/admin/practitioners'
 import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin/security'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient/dashboard'
@@ -37,6 +38,8 @@ import { Route as AuthenticatedPractitionerAgendaRouteImport } from './routes/_a
 import { Route as AuthenticatedPractitionerDashboardRouteImport } from './routes/_authenticated/practitioner/dashboard'
 import { Route as AuthenticatedPractitionerNotificationsRouteImport } from './routes/_authenticated/practitioner/notifications'
 import { Route as AuthenticatedPractitionerProfileRouteImport } from './routes/_authenticated/practitioner/profile'
+import { Route as AuthenticatedPractitionerReportsRouteImport } from './routes/_authenticated/practitioner/reports'
+import { Route as AuthenticatedStaffBookRouteImport } from './routes/_authenticated/staff/book'
 import { Route as AuthenticatedStaffDashboardRouteImport } from './routes/_authenticated/staff/dashboard'
 import { Route as AuthenticatedStaffSecurityRouteImport } from './routes/_authenticated/staff/security'
 import { Route as AuthenticatedStaffUsersRouteImport } from './routes/_authenticated/staff/users'
@@ -129,6 +132,12 @@ const AuthenticatedAdminMaintenanceRoute =
     path: '/maintenance',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminPractitionersRoute =
+  AuthenticatedAdminPractitionersRouteImport.update({
+    id: '/practitioners',
+    path: '/practitioners',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminSecurityRoute =
   AuthenticatedAdminSecurityRouteImport.update({
     id: '/security',
@@ -200,6 +209,17 @@ const AuthenticatedPractitionerProfileRoute =
     path: '/profile',
     getParentRoute: () => AuthenticatedPractitionerRouteRoute,
   } as any)
+const AuthenticatedPractitionerReportsRoute =
+  AuthenticatedPractitionerReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedPractitionerRouteRoute,
+  } as any)
+const AuthenticatedStaffBookRoute = AuthenticatedStaffBookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => AuthenticatedStaffRouteRoute,
+} as any)
 const AuthenticatedStaffDashboardRoute =
   AuthenticatedStaffDashboardRouteImport.update({
     id: '/dashboard',
@@ -264,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
+  '/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -276,6 +297,8 @@ export interface FileRoutesByFullPath {
   '/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
   '/practitioner/notifications': typeof AuthenticatedPractitionerNotificationsRoute
   '/practitioner/profile': typeof AuthenticatedPractitionerProfileRoute
+  '/practitioner/reports': typeof AuthenticatedPractitionerReportsRoute
+  '/staff/book': typeof AuthenticatedStaffBookRoute
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
@@ -301,6 +324,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
+  '/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -313,6 +337,8 @@ export interface FileRoutesByTo {
   '/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
   '/practitioner/notifications': typeof AuthenticatedPractitionerNotificationsRoute
   '/practitioner/profile': typeof AuthenticatedPractitionerProfileRoute
+  '/practitioner/reports': typeof AuthenticatedPractitionerReportsRoute
+  '/staff/book': typeof AuthenticatedStaffBookRoute
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
@@ -340,6 +366,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/_authenticated/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
+  '/_authenticated/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
@@ -352,6 +379,8 @@ export interface FileRoutesById {
   '/_authenticated/practitioner/dashboard': typeof AuthenticatedPractitionerDashboardRoute
   '/_authenticated/practitioner/notifications': typeof AuthenticatedPractitionerNotificationsRoute
   '/_authenticated/practitioner/profile': typeof AuthenticatedPractitionerProfileRoute
+  '/_authenticated/practitioner/reports': typeof AuthenticatedPractitionerReportsRoute
+  '/_authenticated/staff/book': typeof AuthenticatedStaffBookRoute
   '/_authenticated/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/_authenticated/staff/security': typeof AuthenticatedStaffSecurityRoute
   '/_authenticated/staff/users': typeof AuthenticatedStaffUsersRoute
@@ -379,6 +408,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/admin/dashboard'
     | '/admin/maintenance'
+    | '/admin/practitioners'
     | '/admin/security'
     | '/admin/users'
     | '/patient/dashboard'
@@ -391,6 +421,8 @@ export interface FileRouteTypes {
     | '/practitioner/dashboard'
     | '/practitioner/notifications'
     | '/practitioner/profile'
+    | '/practitioner/reports'
+    | '/staff/book'
     | '/staff/dashboard'
     | '/staff/security'
     | '/staff/users'
@@ -416,6 +448,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/admin/dashboard'
     | '/admin/maintenance'
+    | '/admin/practitioners'
     | '/admin/security'
     | '/admin/users'
     | '/patient/dashboard'
@@ -428,6 +461,8 @@ export interface FileRouteTypes {
     | '/practitioner/dashboard'
     | '/practitioner/notifications'
     | '/practitioner/profile'
+    | '/practitioner/reports'
+    | '/staff/book'
     | '/staff/dashboard'
     | '/staff/security'
     | '/staff/users'
@@ -454,6 +489,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/admin/dashboard'
     | '/_authenticated/admin/maintenance'
+    | '/_authenticated/admin/practitioners'
     | '/_authenticated/admin/security'
     | '/_authenticated/admin/users'
     | '/_authenticated/patient/dashboard'
@@ -466,6 +502,8 @@ export interface FileRouteTypes {
     | '/_authenticated/practitioner/dashboard'
     | '/_authenticated/practitioner/notifications'
     | '/_authenticated/practitioner/profile'
+    | '/_authenticated/practitioner/reports'
+    | '/_authenticated/staff/book'
     | '/_authenticated/staff/dashboard'
     | '/_authenticated/staff/security'
     | '/_authenticated/staff/users'
@@ -603,6 +641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminMaintenanceRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/practitioners': {
+      id: '/_authenticated/admin/practitioners'
+      path: '/practitioners'
+      fullPath: '/admin/practitioners'
+      preLoaderRoute: typeof AuthenticatedAdminPractitionersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/security': {
       id: '/_authenticated/admin/security'
       path: '/security'
@@ -687,6 +732,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPractitionerProfileRouteImport
       parentRoute: typeof AuthenticatedPractitionerRouteRoute
     }
+    '/_authenticated/practitioner/reports': {
+      id: '/_authenticated/practitioner/reports'
+      path: '/reports'
+      fullPath: '/practitioner/reports'
+      preLoaderRoute: typeof AuthenticatedPractitionerReportsRouteImport
+      parentRoute: typeof AuthenticatedPractitionerRouteRoute
+    }
+    '/_authenticated/staff/book': {
+      id: '/_authenticated/staff/book'
+      path: '/book'
+      fullPath: '/staff/book'
+      preLoaderRoute: typeof AuthenticatedStaffBookRouteImport
+      parentRoute: typeof AuthenticatedStaffRouteRoute
+    }
     '/_authenticated/staff/dashboard': {
       id: '/_authenticated/staff/dashboard'
       path: '/dashboard'
@@ -749,6 +808,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
   AuthenticatedAdminMaintenanceRoute: typeof AuthenticatedAdminMaintenanceRoute
+  AuthenticatedAdminPractitionersRoute: typeof AuthenticatedAdminPractitionersRoute
   AuthenticatedAdminSecurityRoute: typeof AuthenticatedAdminSecurityRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
 }
@@ -757,6 +817,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
     AuthenticatedAdminMaintenanceRoute: AuthenticatedAdminMaintenanceRoute,
+    AuthenticatedAdminPractitionersRoute: AuthenticatedAdminPractitionersRoute,
     AuthenticatedAdminSecurityRoute: AuthenticatedAdminSecurityRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   }
@@ -801,6 +862,7 @@ interface AuthenticatedPractitionerRouteRouteChildren {
   AuthenticatedPractitionerDashboardRoute: typeof AuthenticatedPractitionerDashboardRoute
   AuthenticatedPractitionerNotificationsRoute: typeof AuthenticatedPractitionerNotificationsRoute
   AuthenticatedPractitionerProfileRoute: typeof AuthenticatedPractitionerProfileRoute
+  AuthenticatedPractitionerReportsRoute: typeof AuthenticatedPractitionerReportsRoute
   AuthenticatedPractitionerPatientsPatientIdRoute: typeof AuthenticatedPractitionerPatientsPatientIdRoute
   AuthenticatedPractitionerPatientsIndexRoute: typeof AuthenticatedPractitionerPatientsIndexRoute
 }
@@ -814,6 +876,8 @@ const AuthenticatedPractitionerRouteRouteChildren: AuthenticatedPractitionerRout
       AuthenticatedPractitionerNotificationsRoute,
     AuthenticatedPractitionerProfileRoute:
       AuthenticatedPractitionerProfileRoute,
+    AuthenticatedPractitionerReportsRoute:
+      AuthenticatedPractitionerReportsRoute,
     AuthenticatedPractitionerPatientsPatientIdRoute:
       AuthenticatedPractitionerPatientsPatientIdRoute,
     AuthenticatedPractitionerPatientsIndexRoute:
@@ -826,6 +890,7 @@ const AuthenticatedPractitionerRouteRouteWithChildren =
   )
 
 interface AuthenticatedStaffRouteRouteChildren {
+  AuthenticatedStaffBookRoute: typeof AuthenticatedStaffBookRoute
   AuthenticatedStaffDashboardRoute: typeof AuthenticatedStaffDashboardRoute
   AuthenticatedStaffSecurityRoute: typeof AuthenticatedStaffSecurityRoute
   AuthenticatedStaffUsersRoute: typeof AuthenticatedStaffUsersRoute
@@ -833,6 +898,7 @@ interface AuthenticatedStaffRouteRouteChildren {
 
 const AuthenticatedStaffRouteRouteChildren: AuthenticatedStaffRouteRouteChildren =
   {
+    AuthenticatedStaffBookRoute: AuthenticatedStaffBookRoute,
     AuthenticatedStaffDashboardRoute: AuthenticatedStaffDashboardRoute,
     AuthenticatedStaffSecurityRoute: AuthenticatedStaffSecurityRoute,
     AuthenticatedStaffUsersRoute: AuthenticatedStaffUsersRoute,

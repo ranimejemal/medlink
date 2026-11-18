@@ -91,7 +91,7 @@ function AppointmentsTab() {
       if (!pid) return [];
       const { data: appts, error } = await supabase
         .from("appointments")
-        .select("id,patient_id,starts_at,ends_at,status,reason,clinics(name,city)")
+        .select("id,patient_id,starts_at,ends_at,status,reason,booked_by_staff,clinics(name,city)")
         .eq("practitioner_id", pid)
         .gte("starts_at", start.toISOString())
         .lt("starts_at", end.toISOString())
@@ -189,6 +189,11 @@ function AppointmentsTab() {
                         {a.patient}
                         {a.reason && <span className="text-muted-foreground"> · {a.reason}</span>}
                       </span>
+                      {a.booked_by_staff && (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                          Pris par l'accueil
+                        </span>
+                      )}
                       <StatusBadge status={a.status} />
                     </Link>
                   </li>

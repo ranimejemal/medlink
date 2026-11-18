@@ -128,6 +128,19 @@ function UsersPage() {
     },
     onSuccess: refresh,
   });
+  // US-28 / US-33: grant or remove a role. Applies at the user's next sign-in (roles are read
+  // at login) and is written to the audit log by admin_set_role().
+  const changeRole = useMutation({
+    mutationFn: async (v: { id: string; role: AppRole; grant: boolean }) => {
+      const { error } = await supabase.rpc("admin_set_role", {
+        _user: v.id,
+        _role: v.role,
+        _grant: v.grant,
+      });
+      if (error) throw error;
+    },
+    onSuccess: refresh,
+  });
   const del = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.rpc("admin_delete_user", { _user: id });
@@ -136,7 +149,8 @@ function UsersPage() {
     onSuccess: refresh,
   });
 
-  const err = users.error ?? invite.error ?? revoke.error ?? toggle.error ?? del.error;
+  const err =
+    users.error ?? invite.error ?? revoke.error ?? toggle.error ?? changeRole.error ?? del.error;
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const shown = useMemo(() => {
@@ -279,12 +293,37 @@ function UsersPage() {
                       ? ` · Dernière session : ${fmtDateTime(u.last_session_at)}`
                       : ""}
                   </p>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {u.roles.map((r) => (
-                      <span key={r} className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                        {label(r)}
-                      </span>
-                    ))}
+                  <div className="mt-2 flex flex-wrap gap-1" aria-label="Rôles">
+                    {ROLES.map((r) => {
+                      const has = u.roles.includes(r.v);
+                      return (
+                        <button
+                          key={r.v}
+                          type="button"
+                          disabled={changeRole.isPending}
+                          title={
+                            has ? "Cliquer pour retirer ce rôle" : "Cliquer pour ajouter ce rôle"
+                          }
+                          className={`rounded-full border px-2 py-0.5 text-xs ${
+                            has
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-dashed text-muted-foreground hover:bg-muted"
+                          }`}
+                          onClick={() => {
+                            const msg = has
+                              ? `Retirer le rôle « ${r.label} » à ${u.email} ?`
+                              : `Ajouter le rôle « ${r.label} » à ${u.email} ?`;
+                            if (
+                              confirm(`${msg} Le changement s'applique à sa prochaine connexion.`)
+                            )
+                              changeRole.mutate({ id: u.id, role: r.v, grant: !has });
+                          }}
+                        >
+                          {has ? "✓ " : "+ "}
+                          {r.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <div className="flex gap-2">
