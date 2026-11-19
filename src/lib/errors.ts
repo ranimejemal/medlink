@@ -18,6 +18,10 @@ const MESSAGES: Record<string, string> = {
   PRACTITIONER_ALREADY_LINKED: "Ce praticien a déjà un compte ou une invitation en cours.",
   INVALID_SLOT: "Créneau invalide : il doit être dans le futur et durer au plus 4 heures.",
   SLOT_OVERLAP: "Ce créneau chevauche un créneau existant.",
+  PRACTITIONER_ABSENT:
+    "Le praticien est absent sur cette période. Choisissez un autre créneau ou une autre date.",
+  INVALID_PERIOD:
+    "Période invalide : la fin doit être après le début, dans le futur, et la durée au plus 120 jours.",
   INVALID_EMAIL: "Adresse e-mail invalide.",
   SELF_DELETION: "Vous ne pouvez pas supprimer votre propre compte.",
   LAST_ADMIN: "Impossible de supprimer le dernier administrateur.",
