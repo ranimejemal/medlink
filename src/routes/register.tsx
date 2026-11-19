@@ -26,6 +26,9 @@ export const Route = createFileRoute("/register")({
       { property: "og:description", content: "Inscription patient au portail médical MedLink." },
     ],
   }),
+  // Optional ?email= from the home page form, pre-filled in the form below.
+  validateSearch: (search: Record<string, unknown>): { email?: string } =>
+    typeof search["email"] === "string" ? { email: search["email"].slice(0, 255) } : {},
   component: RegisterPage,
 });
 
@@ -53,11 +56,12 @@ const schema = z
   });
 
 function RegisterPage() {
+  const search = Route.useSearch();
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
     phone: "",
-    email: "",
+    email: search.email ?? "",
     password: "",
     confirm: "",
     consent: false,
