@@ -31,13 +31,6 @@ const schema = z.object({
   password: z.string().min(1, "Mot de passe requis"),
 });
 
-const DEMO = [
-  ["Patient", "patient.demo@medlink.test"],
-  ["Praticien", "doctor.demo@medlink.test"],
-  ["Administrateur", "admin.demo@medlink.test"],
-  ["Personnel", "staff.demo@medlink.test"],
-];
-
 function LoginPage() {
   const navigate = useNavigate();
   const signIn = useServerFn(secureSignIn);
@@ -123,28 +116,6 @@ function LoginPage() {
           {loading && <Loader2 className="h-4 w-4 animate-spin" />} Se connecter
         </Button>
       </form>
-      <div className="mt-8 rounded-xl border border-dashed bg-muted/60 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Comptes de démonstration (fictifs)
-        </p>
-        <ul className="mt-2 space-y-1.5">
-          {DEMO.map(([label, mail]) => (
-            <li key={mail}>
-              <button
-                type="button"
-                onClick={() => setEmail(mail ?? "")}
-                className="flex w-full justify-between gap-2 text-left text-xs hover:text-primary"
-              >
-                <span className="text-muted-foreground">{label}</span>
-                <span className="font-mono">{mail}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Mot de passe : <span className="font-mono">MedLink#Demo2026</span>
-        </p>
-      </div>
     </AuthLayout>
   );
 }
