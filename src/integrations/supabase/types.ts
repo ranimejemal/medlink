@@ -1,10 +1,35 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+﻿export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.18";
+  };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
     Tables: {
@@ -32,27 +57,6 @@ export type Database = {
           id?: string;
           practitioner_id?: string | null;
           role?: Database["public"]["Enums"]["app_role"];
-        };
-        Relationships: [];
-      };
-      appointment_reminders: {
-        Row: {
-          appointment_id: string;
-          channel: string;
-          kind: string;
-          sent_at: string;
-        };
-        Insert: {
-          appointment_id: string;
-          channel?: string;
-          kind: string;
-          sent_at?: string;
-        };
-        Update: {
-          appointment_id?: string;
-          channel?: string;
-          kind?: string;
-          sent_at?: string;
         };
         Relationships: [];
       };
@@ -567,6 +571,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      practitioner_absences: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          ends_at: string;
+          id: string;
+          practitioner_id: string;
+          reason: string | null;
+          starts_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          ends_at: string;
+          id?: string;
+          practitioner_id: string;
+          reason?: string | null;
+          starts_at: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string;
+          id?: string;
+          practitioner_id?: string;
+          reason?: string | null;
+          starts_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "practitioner_absences_practitioner_id_fkey";
+            columns: ["practitioner_id"];
+            isOneToOne: false;
+            referencedRelation: "practitioners";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       practitioner_clinics: {
         Row: {
           clinic_id: string;
@@ -910,6 +952,15 @@ export type Database = {
         Returns: undefined;
       };
       admin_stats: { Args: never; Returns: Json };
+      block_period: {
+        Args: {
+          _ends: string;
+          _practitioner?: string;
+          _reason?: string;
+          _starts: string;
+        };
+        Returns: Json;
+      };
       book_appointment: {
         Args: { _reason: string; _slot_id: string };
         Returns: string;
@@ -941,7 +992,6 @@ export type Database = {
         Returns: undefined;
       };
       current_practitioner_id: { Args: never; Returns: string };
-      delete_my_account: { Args: never; Returns: undefined };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -953,13 +1003,6 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       is_my_patient: { Args: { _patient: string }; Returns: boolean };
       is_staff: { Args: never; Returns: boolean };
-      list_doctors: {
-        Args: never;
-        Returns: {
-          full_name: string;
-          id: string;
-        }[];
-      };
       log_record_access: {
         Args: { _ip?: string; _patient: string };
         Returns: boolean;
@@ -1137,6 +1180,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["patient", "practitioner", "admin", "staff"],

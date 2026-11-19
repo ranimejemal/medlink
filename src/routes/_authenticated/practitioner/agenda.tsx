@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState, ListSkeleton, PageHeader, Panel, StatusBadge } from "@/components/medlink/ui";
 import { friendlyError } from "@/lib/errors";
+import { AbsencesPanel } from "@/components/medlink/AbsencesPanel";
 
 export const Route = createFileRoute("/_authenticated/practitioner/agenda")({
   head: () => ({
@@ -359,6 +360,7 @@ function AvailabilityTab() {
               {add.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Ajouter
             </Button>
           </Panel>
+          <AbsencesPanel />
           <Panel title="Mes prochains créneaux">
             {slots.isLoading ? (
               <ListSkeleton />
