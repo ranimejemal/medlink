@@ -37,3 +37,6 @@ dist-ssr
 !.env.example
 
 supabase/.temp/
+
+# Vercel build output / project link
+.vercel

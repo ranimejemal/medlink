@@ -6,6 +6,14 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { nitro } from "nitro/vite";
 
+const SECURITY_HEADERS = {
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+};
+
 export default defineConfig(({ command, mode }) => {
   // Make server-side code (server functions) see the same .env values in dev.
   const env = loadEnv(mode, process.cwd(), "");
@@ -35,8 +43,18 @@ export default defineConfig(({ command, mode }) => {
           client: { files: ["**/server/**"], specifiers: ["server-only"] },
         },
       }),
-      // Production server bundle: a standalone Node server, suited to a VPS (US-57).
-      ...(command === "build" ? [nitro({ preset: "node-server" })] : []),
+      // Production server bundle (US-57): a standalone Node server for Docker / a VPS, or the
+      // Vercel format when the build runs on Vercel (Vercel sets VERCEL=1 during its builds).
+      ...(command === "build"
+        ? [
+            nitro({
+              preset:
+                process.env["NITRO_PRESET"] ?? (process.env["VERCEL"] ? "vercel" : "node-server"),
+              // US-44 security headers, also sent where Caddy is not in front (e.g. Vercel).
+              routeRules: { "/**": { headers: SECURITY_HEADERS } },
+            }),
+          ]
+        : []),
       viteReact(),
     ],
   };
