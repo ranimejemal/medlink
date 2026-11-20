@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Loader2, MailCheck } from "lucide-react";
 import { AuthLayout } from "@/components/medlink/AuthLayout";
@@ -31,6 +31,8 @@ export const Route = createFileRoute("/register")({
     typeof search["email"] === "string" ? { email: search["email"].slice(0, 255) } : {},
   component: RegisterPage,
 });
+
+const RESEND_COOLDOWN = 60;
 
 const schema = z
   .object({
@@ -71,6 +73,14 @@ function RegisterPage() {
   const [done, setDone] = useState(false);
   const [code, setCode] = useState("");
   const [info, setInfo] = useState<string | null>(null);
+  const [existing, setExisting] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = window.setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [cooldown]);
   const navigate = useNavigate();
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.value });
@@ -81,7 +91,8 @@ function RegisterPage() {
     const parsed = schema.safeParse(form);
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Formulaire invalide");
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    setExisting(false);
+    const { data, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
@@ -103,6 +114,12 @@ function RegisterPage() {
         message: error.message,
       });
       return setError(friendlyError(error));
+    }
+    // Address already registered: Supabase answers "ok" but sends no code (anti-enumeration).
+    // Waiting for a code would block the user, so we send them to the sign-in page instead.
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      setExisting(true);
+      return;
     }
     setDone(true);
   };
@@ -128,7 +145,7 @@ function RegisterPage() {
       });
       return setError(
         /expired|invalid/i.test(error.message)
-          ? "Code invalide ou expiré. Demandez un nouveau code."
+          ? "Code invalide ou expiré. Utilisez le code du dernier e-mail reçu, ou demandez un nouveau code."
           : friendlyError(error),
       );
     }
@@ -138,12 +155,18 @@ function RegisterPage() {
     navigate({ to: "/login" });
   };
 
+  // Each new code cancels the previous one: one resend at a time, then wait 60 s.
   const resend = async () => {
+    if (resending || cooldown > 0) return;
     setError(null);
     setInfo(null);
+    setResending(true);
     const { error } = await supabase.auth.resend({ type: "signup", email: form.email.trim() });
+    setResending(false);
+    setCooldown(RESEND_COOLDOWN);
     if (error) return setError(friendlyError(error));
-    setInfo("Un nouveau code a été envoyé.");
+    setCode("");
+    setInfo("Un nouveau code a été envoyé. Utilisez uniquement le code de ce dernier e-mail.");
   };
 
   if (done)
@@ -180,8 +203,18 @@ function RegisterPage() {
           <Button type="submit" className="h-11 w-full" disabled={loading}>
             {loading && <Loader2 className="h-4 w-4 animate-spin" />} Confirmer
           </Button>
-          <Button type="button" variant="ghost" className="w-full" onClick={resend}>
-            Renvoyer le code
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={resend}
+            disabled={resending || cooldown > 0}
+          >
+            {resending
+              ? "Envoi…"
+              : cooldown > 0
+                ? `Renvoyer le code (${cooldown} s)`
+                : "Renvoyer le code"}
           </Button>
         </form>
       </AuthLayout>
@@ -204,6 +237,21 @@ function RegisterPage() {
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {existing && (
+          <Alert>
+            <AlertDescription>
+              Un compte existe déjà avec cette adresse e-mail.{" "}
+              <Link to="/login" className="font-medium text-primary hover:underline">
+                Connectez-vous
+              </Link>{" "}
+              ou utilisez{" "}
+              <Link to="/forgot-password" className="font-medium text-primary hover:underline">
+                Mot de passe oublié
+              </Link>
+              .
+            </AlertDescription>
           </Alert>
         )}
         <div className="grid gap-4 sm:grid-cols-2">
