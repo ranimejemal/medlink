@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { getUserId } from "@/lib/auth";
 import { fmtDateTime } from "@/lib/format";
 import { colors, font } from "@/constants/theme";
+import { cancelAppointment } from "@/lib/practitioners";
 
 export default function Appointments() {
   const router = useRouter();
@@ -26,13 +27,7 @@ export default function Appointments() {
   });
 
   const cancel = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ status: "cancelled" })
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => cancelAppointment(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["appointments"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });

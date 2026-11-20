@@ -37,7 +37,14 @@
       "expo-secure-store",
       "expo-sharing",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MedLink accède à vos photos pour ajouter un document médical.",
+          "cameraPermission": "MedLink utilise la caméra pour numériser un document médical."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

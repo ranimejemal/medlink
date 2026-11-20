@@ -120,60 +120,39 @@ export async function fetchSlots(practitionerId: string, day: Date): Promise<Slo
     )
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 }
+const MESSAGES: Record<string, string> = {
+  SLOT_TAKEN: "Ce créneau vient d'être réservé par un autre patient. Choisissez-en un autre.",
+  SLOT_NOT_FOUND: "Ce créneau n'existe plus.",
+  SLOT_TOO_SOON: "Ce créneau est trop proche : réservez au moins 1 heure à l'avance.",
+  TOO_MANY_APPOINTMENTS: "Vous avez déjà 5 rendez-vous à venir. Annulez-en un pour en prendre un autre.",
+  INVALID_REASON: "Le motif est trop long (500 caractères maximum).",
+  TOO_LATE: "Un rendez-vous ne peut plus être annulé ou reporté moins de 24 h avant son début.",
+  NOT_CANCELLABLE: "Ce rendez-vous ne peut plus être annulé.",
+  NOT_FOUND: "Rendez-vous introuvable.",
+  FORBIDDEN: "Action non autorisée pour ce compte.",
+};
 
-export async function bookAppointment(input: {
-  practitionerId: string;
-  clinicId: string | null;
-  slot: Slot;
-  reason: string;
-}) {
-  const uid = await getUserId();
-  let clinicId = input.clinicId;
+export function friendlyError(error: { message?: string }): Error {
+  const msg = error?.message ?? "";
+  const key = Object.keys(MESSAGES).find((k) => msg.includes(k));
+  return new Error(key ? MESSAGES[key] : msg || "Erreur inconnue");
+}
 
-  // 1. Chercher la clinique du praticien
-  if (!clinicId) {
-    const { data: pc } = await supabase
-      .from("practitioner_clinics")
-      .select("clinic_id")
-      .eq("practitioner_id", input.practitionerId)
-      .limit(1)
-      .maybeSingle();
-    clinicId = pc?.clinic_id ? String(pc.clinic_id) : null;
-  }
-
-  // 2. Sinon, chercher dans le créneau (ignoré si la colonne n'existe pas)
-  if (!clinicId) {
-    const { data: s } = await supabase
-      .from("availability_slots")
-      .select("clinic_id")
-      .eq("id", input.slot.id)
-      .maybeSingle();
-    clinicId = (s as any)?.clinic_id ? String((s as any).clinic_id) : null;
-  }
-
-  if (!clinicId) throw new Error("Aucune clinique associée à ce praticien.");
-
-  const { error } = await supabase.from("appointments").insert({
-    patient_id: uid,
-    practitioner_id: input.practitionerId,
-    clinic_id: clinicId, // ✅
-    slot_id: input.slot.id,
-    starts_at: input.slot.startsAt.toISOString(),
-    ends_at: input.slot.endsAt?.toISOString() ?? null,
-    status: "scheduled",
-    reason: input.reason.trim() || null,
+export async function bookAppointment(input: { practitionerId: string; slot: Slot; reason: string }) {
+  const { data, error } = await supabase.rpc("book_appointment", {
+    _slot_id: input.slot.id,
+    _reason: input.reason.trim(),
   });
-  if (error) throw error;
+  if (error) throw friendlyError(error);
+  return data as string;
+}
+
+export async function cancelAppointment(appointmentId: string) {
+  const { error } = await supabase.rpc("cancel_appointment", { _id: appointmentId });
+  if (error) throw friendlyError(error);
 }
 
 export async function rescheduleAppointment(appointmentId: string, slot: Slot) {
-  const { error } = await supabase
-    .from("appointments")
-    .update({
-      slot_id: slot.id,
-      starts_at: slot.startsAt.toISOString(),
-      ends_at: slot.endsAt?.toISOString() ?? null,
-    })
-    .eq("id", appointmentId);
-  if (error) throw error;
+  const { error } = await supabase.rpc("reschedule_appointment", { _id: appointmentId, _new_slot: slot.id });
+  if (error) throw friendlyError(error);
 }

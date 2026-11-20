@@ -1,1183 +1,1236 @@
-﻿export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.18";
-  };
+    PostgrestVersion: "14.18"
+  }
   graphql_public: {
     Tables: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     Views: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     Functions: {
       graphql: {
         Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
     Enums: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       account_invitations: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          email: string;
-          id: string;
-          practitioner_id: string | null;
-          role: Database["public"]["Enums"]["app_role"];
-        };
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          practitioner_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          email: string;
-          id?: string;
-          practitioner_id?: string | null;
-          role: Database["public"]["Enums"]["app_role"];
-        };
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          practitioner_id?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          email?: string;
-          id?: string;
-          practitioner_id?: string | null;
-          role?: Database["public"]["Enums"]["app_role"];
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          practitioner_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       appointment_requests: {
         Row: {
-          created_at: string;
-          duration: string | null;
-          id: string;
-          patient_id: string;
-          preferred_timing: string | null;
-          raw_notes: string;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          staff_note: string | null;
-          status: string;
-          suggested_specialty: string | null;
-          summary: string;
-          symptoms: string[];
-          urgency: string;
-        };
+          created_at: string
+          duration: string | null
+          id: string
+          patient_id: string
+          preferred_timing: string | null
+          raw_notes: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          staff_note: string | null
+          status: string
+          suggested_specialty: string | null
+          summary: string
+          symptoms: string[]
+          urgency: string
+        }
         Insert: {
-          created_at?: string;
-          duration?: string | null;
-          id?: string;
-          patient_id?: string;
-          preferred_timing?: string | null;
-          raw_notes: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          staff_note?: string | null;
-          status?: string;
-          suggested_specialty?: string | null;
-          summary: string;
-          symptoms?: string[];
-          urgency: string;
-        };
+          created_at?: string
+          duration?: string | null
+          id?: string
+          patient_id?: string
+          preferred_timing?: string | null
+          raw_notes: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          staff_note?: string | null
+          status?: string
+          suggested_specialty?: string | null
+          summary: string
+          symptoms?: string[]
+          urgency: string
+        }
         Update: {
-          created_at?: string;
-          duration?: string | null;
-          id?: string;
-          patient_id?: string;
-          preferred_timing?: string | null;
-          raw_notes?: string;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          staff_note?: string | null;
-          status?: string;
-          suggested_specialty?: string | null;
-          summary?: string;
-          symptoms?: string[];
-          urgency?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          duration?: string | null
+          id?: string
+          patient_id?: string
+          preferred_timing?: string | null
+          raw_notes?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          staff_note?: string | null
+          status?: string
+          suggested_specialty?: string | null
+          summary?: string
+          symptoms?: string[]
+          urgency?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
-          booked_by_staff: string | null;
-          cancelled_at: string | null;
-          cancelled_by: string | null;
-          clinic_id: string;
-          confirmation_sent_at: string | null;
-          created_at: string;
-          ends_at: string;
-          id: string;
-          patient_id: string;
-          practitioner_id: string;
-          reason: string | null;
-          reminder_sent_at: string | null;
-          slot_id: string | null;
-          starts_at: string;
-          status: Database["public"]["Enums"]["appointment_status"];
-          updated_at: string;
-        };
+          booked_by_staff: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          clinic_id: string
+          confirmation_sent_at: string | null
+          created_at: string
+          ends_at: string
+          id: string
+          patient_id: string
+          practitioner_id: string
+          reason: string | null
+          reminder_sent_at: string | null
+          slot_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          updated_at: string
+        }
         Insert: {
-          booked_by_staff?: string | null;
-          cancelled_at?: string | null;
-          cancelled_by?: string | null;
-          clinic_id: string;
-          confirmation_sent_at?: string | null;
-          created_at?: string;
-          ends_at: string;
-          id?: string;
-          patient_id: string;
-          practitioner_id: string;
-          reason?: string | null;
-          reminder_sent_at?: string | null;
-          slot_id?: string | null;
-          starts_at: string;
-          status?: Database["public"]["Enums"]["appointment_status"];
-          updated_at?: string;
-        };
+          booked_by_staff?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          clinic_id: string
+          confirmation_sent_at?: string | null
+          created_at?: string
+          ends_at: string
+          id?: string
+          patient_id: string
+          practitioner_id: string
+          reason?: string | null
+          reminder_sent_at?: string | null
+          slot_id?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
         Update: {
-          booked_by_staff?: string | null;
-          cancelled_at?: string | null;
-          cancelled_by?: string | null;
-          clinic_id?: string;
-          confirmation_sent_at?: string | null;
-          created_at?: string;
-          ends_at?: string;
-          id?: string;
-          patient_id?: string;
-          practitioner_id?: string;
-          reason?: string | null;
-          reminder_sent_at?: string | null;
-          slot_id?: string | null;
-          starts_at?: string;
-          status?: Database["public"]["Enums"]["appointment_status"];
-          updated_at?: string;
-        };
+          booked_by_staff?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          clinic_id?: string
+          confirmation_sent_at?: string | null
+          created_at?: string
+          ends_at?: string
+          id?: string
+          patient_id?: string
+          practitioner_id?: string
+          reason?: string | null
+          reminder_sent_at?: string | null
+          slot_id?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "appointments_clinic_id_fkey";
-            columns: ["clinic_id"];
-            isOneToOne: false;
-            referencedRelation: "clinics";
-            referencedColumns: ["id"];
+            foreignKeyName: "appointments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "appointments_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "appointments_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "appointments_slot_id_fkey";
-            columns: ["slot_id"];
-            isOneToOne: false;
-            referencedRelation: "availability_slots";
-            referencedColumns: ["id"];
+            foreignKeyName: "appointments_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "availability_slots"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       audit_logs: {
         Row: {
-          action: string;
-          created_at: string;
-          details: Json | null;
-          entity: string | null;
-          entity_id: string | null;
-          id: string;
-          ip_address: string | null;
-          severity: string;
-          user_email: string | null;
-          user_id: string | null;
-        };
+          action: string
+          created_at: string
+          details: Json | null
+          entity: string | null
+          entity_id: string | null
+          id: string
+          ip_address: string | null
+          severity: string
+          user_email: string | null
+          user_id: string | null
+        }
         Insert: {
-          action: string;
-          created_at?: string;
-          details?: Json | null;
-          entity?: string | null;
-          entity_id?: string | null;
-          id?: string;
-          ip_address?: string | null;
-          severity?: string;
-          user_email?: string | null;
-          user_id?: string | null;
-        };
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          ip_address?: string | null
+          severity?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
         Update: {
-          action?: string;
-          created_at?: string;
-          details?: Json | null;
-          entity?: string | null;
-          entity_id?: string | null;
-          id?: string;
-          ip_address?: string | null;
-          severity?: string;
-          user_email?: string | null;
-          user_id?: string | null;
-        };
-        Relationships: [];
-      };
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity?: string | null
+          entity_id?: string | null
+          id?: string
+          ip_address?: string | null
+          severity?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       availability_slots: {
         Row: {
-          clinic_id: string;
-          created_at: string;
-          ends_at: string;
-          id: string;
-          is_booked: boolean;
-          practitioner_id: string;
-          starts_at: string;
-        };
+          clinic_id: string
+          created_at: string
+          ends_at: string
+          id: string
+          is_booked: boolean
+          practitioner_id: string
+          starts_at: string
+        }
         Insert: {
-          clinic_id: string;
-          created_at?: string;
-          ends_at: string;
-          id?: string;
-          is_booked?: boolean;
-          practitioner_id: string;
-          starts_at: string;
-        };
+          clinic_id: string
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_booked?: boolean
+          practitioner_id: string
+          starts_at: string
+        }
         Update: {
-          clinic_id?: string;
-          created_at?: string;
-          ends_at?: string;
-          id?: string;
-          is_booked?: boolean;
-          practitioner_id?: string;
-          starts_at?: string;
-        };
+          clinic_id?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_booked?: boolean
+          practitioner_id?: string
+          starts_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "availability_slots_clinic_id_fkey";
-            columns: ["clinic_id"];
-            isOneToOne: false;
-            referencedRelation: "clinics";
-            referencedColumns: ["id"];
+            foreignKeyName: "availability_slots_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "availability_slots_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "availability_slots_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       clinics: {
         Row: {
-          address: string;
-          city: string;
-          created_at: string;
-          id: string;
-          is_active: boolean;
-          name: string;
-          phone: string;
-        };
+          address: string
+          city: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          phone: string
+        }
         Insert: {
-          address: string;
-          city: string;
-          created_at?: string;
-          id?: string;
-          is_active?: boolean;
-          name: string;
-          phone: string;
-        };
+          address: string
+          city: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          phone: string
+        }
         Update: {
-          address?: string;
-          city?: string;
-          created_at?: string;
-          id?: string;
-          is_active?: boolean;
-          name?: string;
-          phone?: string;
-        };
-        Relationships: [];
-      };
+          address?: string
+          city?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       consultation_reports: {
         Row: {
-          appointment_id: string | null;
-          created_at: string;
-          diagnosis: string | null;
-          diagnosis_enc: string | null;
-          id: string;
-          observations: string | null;
-          observations_enc: string | null;
-          patient_id: string;
-          practitioner_id: string;
-          prescription: string | null;
-          prescription_enc: string | null;
-          reason: string | null;
-          reason_enc: string | null;
-          recommendations: string | null;
-          recommendations_enc: string | null;
-          status: Database["public"]["Enums"]["report_status"];
-          updated_at: string;
-          validated_at: string | null;
-        };
+          appointment_id: string | null
+          created_at: string
+          diagnosis: string | null
+          diagnosis_enc: string | null
+          id: string
+          observations: string | null
+          observations_enc: string | null
+          patient_id: string
+          practitioner_id: string
+          prescription: string | null
+          prescription_enc: string | null
+          reason: string | null
+          reason_enc: string | null
+          recommendations: string | null
+          recommendations_enc: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          updated_at: string
+          validated_at: string | null
+        }
         Insert: {
-          appointment_id?: string | null;
-          created_at?: string;
-          diagnosis?: string | null;
-          diagnosis_enc?: string | null;
-          id?: string;
-          observations?: string | null;
-          observations_enc?: string | null;
-          patient_id: string;
-          practitioner_id: string;
-          prescription?: string | null;
-          prescription_enc?: string | null;
-          reason?: string | null;
-          reason_enc?: string | null;
-          recommendations?: string | null;
-          recommendations_enc?: string | null;
-          status?: Database["public"]["Enums"]["report_status"];
-          updated_at?: string;
-          validated_at?: string | null;
-        };
+          appointment_id?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          diagnosis_enc?: string | null
+          id?: string
+          observations?: string | null
+          observations_enc?: string | null
+          patient_id: string
+          practitioner_id: string
+          prescription?: string | null
+          prescription_enc?: string | null
+          reason?: string | null
+          reason_enc?: string | null
+          recommendations?: string | null
+          recommendations_enc?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+          validated_at?: string | null
+        }
         Update: {
-          appointment_id?: string | null;
-          created_at?: string;
-          diagnosis?: string | null;
-          diagnosis_enc?: string | null;
-          id?: string;
-          observations?: string | null;
-          observations_enc?: string | null;
-          patient_id?: string;
-          practitioner_id?: string;
-          prescription?: string | null;
-          prescription_enc?: string | null;
-          reason?: string | null;
-          reason_enc?: string | null;
-          recommendations?: string | null;
-          recommendations_enc?: string | null;
-          status?: Database["public"]["Enums"]["report_status"];
-          updated_at?: string;
-          validated_at?: string | null;
-        };
+          appointment_id?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          diagnosis_enc?: string | null
+          id?: string
+          observations?: string | null
+          observations_enc?: string | null
+          patient_id?: string
+          practitioner_id?: string
+          prescription?: string | null
+          prescription_enc?: string | null
+          reason?: string | null
+          reason_enc?: string | null
+          recommendations?: string | null
+          recommendations_enc?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+          validated_at?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "consultation_reports_appointment_id_fkey";
-            columns: ["appointment_id"];
-            isOneToOne: false;
-            referencedRelation: "appointments";
-            referencedColumns: ["id"];
+            foreignKeyName: "consultation_reports_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "consultation_reports_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "consultation_reports_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       login_attempts: {
         Row: {
-          created_at: string;
-          email: string;
-          id: string;
-          ip_address: string | null;
-          success: boolean;
-        };
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          success: boolean
+        }
         Insert: {
-          created_at?: string;
-          email: string;
-          id?: string;
-          ip_address?: string | null;
-          success: boolean;
-        };
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          success: boolean
+        }
         Update: {
-          created_at?: string;
-          email?: string;
-          id?: string;
-          ip_address?: string | null;
-          success?: boolean;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+        }
+        Relationships: []
+      }
       maintenance_announcements: {
         Row: {
-          created_at: string;
-          ends_at: string;
-          id: string;
-          is_active: boolean;
-          message: string;
-          starts_at: string;
-          title: string;
-        };
+          created_at: string
+          ends_at: string
+          id: string
+          is_active: boolean
+          message: string
+          starts_at: string
+          title: string
+        }
         Insert: {
-          created_at?: string;
-          ends_at: string;
-          id?: string;
-          is_active?: boolean;
-          message: string;
-          starts_at: string;
-          title: string;
-        };
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          message: string
+          starts_at: string
+          title: string
+        }
         Update: {
-          created_at?: string;
-          ends_at?: string;
-          id?: string;
-          is_active?: boolean;
-          message?: string;
-          starts_at?: string;
-          title?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          starts_at?: string
+          title?: string
+        }
+        Relationships: []
+      }
       medical_records: {
         Row: {
-          allergies: string | null;
-          allergies_enc: string | null;
-          blood_type: string | null;
-          blood_type_enc: string | null;
-          chronic_conditions: string | null;
-          chronic_conditions_enc: string | null;
-          current_treatments: string | null;
-          current_treatments_enc: string | null;
-          id: string;
-          patient_id: string;
-          updated_at: string;
-        };
+          allergies: string | null
+          allergies_enc: string | null
+          blood_type: string | null
+          blood_type_enc: string | null
+          chronic_conditions: string | null
+          chronic_conditions_enc: string | null
+          current_treatments: string | null
+          current_treatments_enc: string | null
+          id: string
+          patient_id: string
+          updated_at: string
+        }
         Insert: {
-          allergies?: string | null;
-          allergies_enc?: string | null;
-          blood_type?: string | null;
-          blood_type_enc?: string | null;
-          chronic_conditions?: string | null;
-          chronic_conditions_enc?: string | null;
-          current_treatments?: string | null;
-          current_treatments_enc?: string | null;
-          id?: string;
-          patient_id: string;
-          updated_at?: string;
-        };
+          allergies?: string | null
+          allergies_enc?: string | null
+          blood_type?: string | null
+          blood_type_enc?: string | null
+          chronic_conditions?: string | null
+          chronic_conditions_enc?: string | null
+          current_treatments?: string | null
+          current_treatments_enc?: string | null
+          id?: string
+          patient_id: string
+          updated_at?: string
+        }
         Update: {
-          allergies?: string | null;
-          allergies_enc?: string | null;
-          blood_type?: string | null;
-          blood_type_enc?: string | null;
-          chronic_conditions?: string | null;
-          chronic_conditions_enc?: string | null;
-          current_treatments?: string | null;
-          current_treatments_enc?: string | null;
-          id?: string;
-          patient_id?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          allergies?: string | null
+          allergies_enc?: string | null
+          blood_type?: string | null
+          blood_type_enc?: string | null
+          chronic_conditions?: string | null
+          chronic_conditions_enc?: string | null
+          current_treatments?: string | null
+          current_treatments_enc?: string | null
+          id?: string
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       medical_results: {
         Row: {
-          category: string;
-          clinic_id: string | null;
-          created_at: string;
-          id: string;
-          patient_id: string;
-          practitioner_id: string | null;
-          result_date: string;
-          status: Database["public"]["Enums"]["result_status"];
-          summary: string | null;
-          summary_enc: string | null;
-          title: string;
-          values_json: Json | null;
-          values_json_enc: string | null;
-        };
+          category: string
+          clinic_id: string | null
+          created_at: string
+          id: string
+          patient_id: string
+          practitioner_id: string | null
+          result_date: string
+          status: Database["public"]["Enums"]["result_status"]
+          summary: string | null
+          summary_enc: string | null
+          title: string
+          values_json: Json | null
+          values_json_enc: string | null
+        }
         Insert: {
-          category: string;
-          clinic_id?: string | null;
-          created_at?: string;
-          id?: string;
-          patient_id: string;
-          practitioner_id?: string | null;
-          result_date?: string;
-          status?: Database["public"]["Enums"]["result_status"];
-          summary?: string | null;
-          summary_enc?: string | null;
-          title: string;
-          values_json?: Json | null;
-          values_json_enc?: string | null;
-        };
+          category: string
+          clinic_id?: string | null
+          created_at?: string
+          id?: string
+          patient_id: string
+          practitioner_id?: string | null
+          result_date?: string
+          status?: Database["public"]["Enums"]["result_status"]
+          summary?: string | null
+          summary_enc?: string | null
+          title: string
+          values_json?: Json | null
+          values_json_enc?: string | null
+        }
         Update: {
-          category?: string;
-          clinic_id?: string | null;
-          created_at?: string;
-          id?: string;
-          patient_id?: string;
-          practitioner_id?: string | null;
-          result_date?: string;
-          status?: Database["public"]["Enums"]["result_status"];
-          summary?: string | null;
-          summary_enc?: string | null;
-          title?: string;
-          values_json?: Json | null;
-          values_json_enc?: string | null;
-        };
+          category?: string
+          clinic_id?: string | null
+          created_at?: string
+          id?: string
+          patient_id?: string
+          practitioner_id?: string | null
+          result_date?: string
+          status?: Database["public"]["Enums"]["result_status"]
+          summary?: string | null
+          summary_enc?: string | null
+          title?: string
+          values_json?: Json | null
+          values_json_enc?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "medical_results_clinic_id_fkey";
-            columns: ["clinic_id"];
-            isOneToOne: false;
-            referencedRelation: "clinics";
-            referencedColumns: ["id"];
+            foreignKeyName: "medical_results_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "medical_results_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "medical_results_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       notifications: {
         Row: {
-          created_at: string;
-          id: string;
-          is_read: boolean;
-          message: string;
-          title: string;
-          type: string;
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          is_read?: boolean;
-          message: string;
-          title: string;
-          type: string;
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          is_read?: boolean;
-          message?: string;
-          title?: string;
-          type?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      patient_documents: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          mime_type: string
+          name: string
+          patient_id: string
+          shared_with_doctor: boolean
+          size_bytes: number
+          storage_path: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          mime_type: string
+          name: string
+          patient_id?: string
+          shared_with_doctor?: boolean
+          size_bytes: number
+          storage_path: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          mime_type?: string
+          name?: string
+          patient_id?: string
+          shared_with_doctor?: boolean
+          size_bytes?: number
+          storage_path?: string
+        }
+        Relationships: []
+      }
       practitioner_absences: {
         Row: {
-          created_at: string;
-          created_by: string | null;
-          ends_at: string;
-          id: string;
-          practitioner_id: string;
-          reason: string | null;
-          starts_at: string;
-        };
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          practitioner_id: string
+          reason: string | null
+          starts_at: string
+        }
         Insert: {
-          created_at?: string;
-          created_by?: string | null;
-          ends_at: string;
-          id?: string;
-          practitioner_id: string;
-          reason?: string | null;
-          starts_at: string;
-        };
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          practitioner_id: string
+          reason?: string | null
+          starts_at: string
+        }
         Update: {
-          created_at?: string;
-          created_by?: string | null;
-          ends_at?: string;
-          id?: string;
-          practitioner_id?: string;
-          reason?: string | null;
-          starts_at?: string;
-        };
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          practitioner_id?: string
+          reason?: string | null
+          starts_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "practitioner_absences_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "practitioner_absences_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       practitioner_clinics: {
         Row: {
-          clinic_id: string;
-          practitioner_id: string;
-        };
+          clinic_id: string
+          practitioner_id: string
+        }
         Insert: {
-          clinic_id: string;
-          practitioner_id: string;
-        };
+          clinic_id: string
+          practitioner_id: string
+        }
         Update: {
-          clinic_id?: string;
-          practitioner_id?: string;
-        };
+          clinic_id?: string
+          practitioner_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "practitioner_clinics_clinic_id_fkey";
-            columns: ["clinic_id"];
-            isOneToOne: false;
-            referencedRelation: "clinics";
-            referencedColumns: ["id"];
+            foreignKeyName: "practitioner_clinics_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "practitioner_clinics_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "practitioner_clinics_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       practitioners: {
         Row: {
-          created_at: string;
-          first_name: string;
-          id: string;
-          is_active: boolean;
-          last_name: string;
-          specialty_id: string;
-          title: string;
-          user_id: string | null;
-        };
+          created_at: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          specialty_id: string
+          title: string
+          user_id: string | null
+        }
         Insert: {
-          created_at?: string;
-          first_name: string;
-          id?: string;
-          is_active?: boolean;
-          last_name: string;
-          specialty_id: string;
-          title?: string;
-          user_id?: string | null;
-        };
+          created_at?: string
+          first_name: string
+          id?: string
+          is_active?: boolean
+          last_name: string
+          specialty_id: string
+          title?: string
+          user_id?: string | null
+        }
         Update: {
-          created_at?: string;
-          first_name?: string;
-          id?: string;
-          is_active?: boolean;
-          last_name?: string;
-          specialty_id?: string;
-          title?: string;
-          user_id?: string | null;
-        };
+          created_at?: string
+          first_name?: string
+          id?: string
+          is_active?: boolean
+          last_name?: string
+          specialty_id?: string
+          title?: string
+          user_id?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "practitioners_specialty_id_fkey";
-            columns: ["specialty_id"];
-            isOneToOne: false;
-            referencedRelation: "specialties";
-            referencedColumns: ["id"];
+            foreignKeyName: "practitioners_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       profiles: {
         Row: {
-          consent_at: string | null;
-          consent_version: string | null;
-          created_at: string;
-          date_of_birth: string | null;
-          email: string;
-          first_name: string;
-          id: string;
-          is_active: boolean;
-          last_name: string;
-          notify_email: boolean;
-          notify_sms: boolean;
-          phone: string | null;
-          updated_at: string;
-        };
+          consent_at: string | null
+          consent_version: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          notify_email: boolean
+          notify_sms: boolean
+          phone: string | null
+          updated_at: string
+        }
         Insert: {
-          consent_at?: string | null;
-          consent_version?: string | null;
-          created_at?: string;
-          date_of_birth?: string | null;
-          email: string;
-          first_name?: string;
-          id: string;
-          is_active?: boolean;
-          last_name?: string;
-          notify_email?: boolean;
-          notify_sms?: boolean;
-          phone?: string | null;
-          updated_at?: string;
-        };
+          consent_at?: string | null
+          consent_version?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email: string
+          first_name?: string
+          id: string
+          is_active?: boolean
+          last_name?: string
+          notify_email?: boolean
+          notify_sms?: boolean
+          phone?: string | null
+          updated_at?: string
+        }
         Update: {
-          consent_at?: string | null;
-          consent_version?: string | null;
-          created_at?: string;
-          date_of_birth?: string | null;
-          email?: string;
-          first_name?: string;
-          id?: string;
-          is_active?: boolean;
-          last_name?: string;
-          notify_email?: boolean;
-          notify_sms?: boolean;
-          phone?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          consent_at?: string | null
+          consent_version?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          is_active?: boolean
+          last_name?: string
+          notify_email?: boolean
+          notify_sms?: boolean
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       specialties: {
         Row: {
-          id: string;
-          name: string;
-        };
+          id: string
+          name: string
+        }
         Insert: {
-          id?: string;
-          name: string;
-        };
+          id?: string
+          name: string
+        }
         Update: {
-          id?: string;
-          name?: string;
-        };
-        Relationships: [];
-      };
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
-          id: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Insert: {
-          id?: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Update: {
-          id?: string;
-          role?: Database["public"]["Enums"]["app_role"];
-          user_id?: string;
-        };
-        Relationships: [];
-      };
-    };
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
     Views: {
       consultation_reports_decrypted: {
         Row: {
-          appointment_id: string | null;
-          created_at: string | null;
-          diagnosis: string | null;
-          id: string | null;
-          observations: string | null;
-          patient_id: string | null;
-          practitioner_id: string | null;
-          prescription: string | null;
-          reason: string | null;
-          recommendations: string | null;
-          status: Database["public"]["Enums"]["report_status"] | null;
-          updated_at: string | null;
-          validated_at: string | null;
-        };
+          appointment_id: string | null
+          created_at: string | null
+          diagnosis: string | null
+          id: string | null
+          observations: string | null
+          patient_id: string | null
+          practitioner_id: string | null
+          prescription: string | null
+          reason: string | null
+          recommendations: string | null
+          status: Database["public"]["Enums"]["report_status"] | null
+          updated_at: string | null
+          validated_at: string | null
+        }
         Insert: {
-          appointment_id?: string | null;
-          created_at?: string | null;
-          diagnosis?: never;
-          id?: string | null;
-          observations?: never;
-          patient_id?: string | null;
-          practitioner_id?: string | null;
-          prescription?: never;
-          reason?: never;
-          recommendations?: never;
-          status?: Database["public"]["Enums"]["report_status"] | null;
-          updated_at?: string | null;
-          validated_at?: string | null;
-        };
+          appointment_id?: string | null
+          created_at?: string | null
+          diagnosis?: never
+          id?: string | null
+          observations?: never
+          patient_id?: string | null
+          practitioner_id?: string | null
+          prescription?: never
+          reason?: never
+          recommendations?: never
+          status?: Database["public"]["Enums"]["report_status"] | null
+          updated_at?: string | null
+          validated_at?: string | null
+        }
         Update: {
-          appointment_id?: string | null;
-          created_at?: string | null;
-          diagnosis?: never;
-          id?: string | null;
-          observations?: never;
-          patient_id?: string | null;
-          practitioner_id?: string | null;
-          prescription?: never;
-          reason?: never;
-          recommendations?: never;
-          status?: Database["public"]["Enums"]["report_status"] | null;
-          updated_at?: string | null;
-          validated_at?: string | null;
-        };
+          appointment_id?: string | null
+          created_at?: string | null
+          diagnosis?: never
+          id?: string | null
+          observations?: never
+          patient_id?: string | null
+          practitioner_id?: string | null
+          prescription?: never
+          reason?: never
+          recommendations?: never
+          status?: Database["public"]["Enums"]["report_status"] | null
+          updated_at?: string | null
+          validated_at?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "consultation_reports_appointment_id_fkey";
-            columns: ["appointment_id"];
-            isOneToOne: false;
-            referencedRelation: "appointments";
-            referencedColumns: ["id"];
+            foreignKeyName: "consultation_reports_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "consultation_reports_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "consultation_reports_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       medical_records_decrypted: {
         Row: {
-          allergies: string | null;
-          blood_type: string | null;
-          chronic_conditions: string | null;
-          current_treatments: string | null;
-          id: string | null;
-          patient_id: string | null;
-          updated_at: string | null;
-        };
+          allergies: string | null
+          blood_type: string | null
+          chronic_conditions: string | null
+          current_treatments: string | null
+          id: string | null
+          patient_id: string | null
+          updated_at: string | null
+        }
         Insert: {
-          allergies?: never;
-          blood_type?: never;
-          chronic_conditions?: never;
-          current_treatments?: never;
-          id?: string | null;
-          patient_id?: string | null;
-          updated_at?: string | null;
-        };
+          allergies?: never
+          blood_type?: never
+          chronic_conditions?: never
+          current_treatments?: never
+          id?: string | null
+          patient_id?: string | null
+          updated_at?: string | null
+        }
         Update: {
-          allergies?: never;
-          blood_type?: never;
-          chronic_conditions?: never;
-          current_treatments?: never;
-          id?: string | null;
-          patient_id?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
+          allergies?: never
+          blood_type?: never
+          chronic_conditions?: never
+          current_treatments?: never
+          id?: string | null
+          patient_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       medical_results_decrypted: {
         Row: {
-          category: string | null;
-          clinic_id: string | null;
-          created_at: string | null;
-          id: string | null;
-          patient_id: string | null;
-          practitioner_id: string | null;
-          result_date: string | null;
-          status: Database["public"]["Enums"]["result_status"] | null;
-          summary: string | null;
-          title: string | null;
-          values_json: Json | null;
-        };
+          category: string | null
+          clinic_id: string | null
+          created_at: string | null
+          id: string | null
+          patient_id: string | null
+          practitioner_id: string | null
+          result_date: string | null
+          status: Database["public"]["Enums"]["result_status"] | null
+          summary: string | null
+          title: string | null
+          values_json: Json | null
+        }
         Insert: {
-          category?: string | null;
-          clinic_id?: string | null;
-          created_at?: string | null;
-          id?: string | null;
-          patient_id?: string | null;
-          practitioner_id?: string | null;
-          result_date?: string | null;
-          status?: Database["public"]["Enums"]["result_status"] | null;
-          summary?: never;
-          title?: string | null;
-          values_json?: never;
-        };
+          category?: string | null
+          clinic_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          patient_id?: string | null
+          practitioner_id?: string | null
+          result_date?: string | null
+          status?: Database["public"]["Enums"]["result_status"] | null
+          summary?: never
+          title?: string | null
+          values_json?: never
+        }
         Update: {
-          category?: string | null;
-          clinic_id?: string | null;
-          created_at?: string | null;
-          id?: string | null;
-          patient_id?: string | null;
-          practitioner_id?: string | null;
-          result_date?: string | null;
-          status?: Database["public"]["Enums"]["result_status"] | null;
-          summary?: never;
-          title?: string | null;
-          values_json?: never;
-        };
+          category?: string | null
+          clinic_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          patient_id?: string | null
+          practitioner_id?: string | null
+          result_date?: string | null
+          status?: Database["public"]["Enums"]["result_status"] | null
+          summary?: never
+          title?: string | null
+          values_json?: never
+        }
         Relationships: [
           {
-            foreignKeyName: "medical_results_clinic_id_fkey";
-            columns: ["clinic_id"];
-            isOneToOne: false;
-            referencedRelation: "clinics";
-            referencedColumns: ["id"];
+            foreignKeyName: "medical_results_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "medical_results_practitioner_id_fkey";
-            columns: ["practitioner_id"];
-            isOneToOne: false;
-            referencedRelation: "practitioners";
-            referencedColumns: ["id"];
+            foreignKeyName: "medical_results_practitioner_id_fkey"
+            columns: ["practitioner_id"]
+            isOneToOne: false
+            referencedRelation: "practitioners"
+            referencedColumns: ["id"]
           },
-        ];
-      };
-    };
+        ]
+      }
+    }
     Functions: {
-      admin_delete_user: { Args: { _user: string }; Returns: undefined };
+      admin_delete_user: { Args: { _user: string }; Returns: undefined }
       admin_invite_user: {
         Args: {
-          _email: string;
-          _practitioner?: string;
-          _role: Database["public"]["Enums"]["app_role"];
-        };
-        Returns: string;
-      };
+          _email: string
+          _practitioner?: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
       admin_list_users: {
-        Args: never;
+        Args: never
         Returns: {
-          created_at: string;
-          email: string;
-          first_name: string;
-          id: string;
-          is_active: boolean;
-          last_name: string;
-          last_session_at: string;
-          last_sign_in_at: string;
-          phone: string;
-          roles: Database["public"]["Enums"]["app_role"][];
-        }[];
-      };
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          last_session_at: string
+          last_sign_in_at: string
+          phone: string
+          roles: Database["public"]["Enums"]["app_role"][]
+        }[]
+      }
       admin_set_active: {
-        Args: { _active: boolean; _user: string };
-        Returns: undefined;
-      };
+        Args: { _active: boolean; _user: string }
+        Returns: undefined
+      }
       admin_set_role: {
         Args: {
-          _grant: boolean;
-          _role: Database["public"]["Enums"]["app_role"];
-          _user: string;
-        };
-        Returns: undefined;
-      };
-      admin_stats: { Args: never; Returns: Json };
+          _grant: boolean
+          _role: Database["public"]["Enums"]["app_role"]
+          _user: string
+        }
+        Returns: undefined
+      }
+      admin_stats: { Args: never; Returns: Json }
       block_period: {
         Args: {
-          _ends: string;
-          _practitioner?: string;
-          _reason?: string;
-          _starts: string;
-        };
-        Returns: Json;
-      };
+          _ends: string
+          _practitioner?: string
+          _reason?: string
+          _starts: string
+        }
+        Returns: Json
+      }
       book_appointment: {
-        Args: { _reason: string; _slot_id: string };
-        Returns: string;
-      };
-      cancel_appointment: { Args: { _id: string }; Returns: undefined };
+        Args: { _reason: string; _slot_id: string }
+        Returns: string
+      }
+      cancel_appointment: { Args: { _id: string }; Returns: undefined }
       claim_appointment_emails: {
-        Args: { _limit?: number };
+        Args: { _limit?: number }
         Returns: {
-          appointment_id: string;
-          clinic_address: string;
-          clinic_city: string;
-          clinic_name: string;
-          clinic_phone: string;
-          email: string;
-          ends_at: string;
-          first_name: string;
-          kind: string;
-          notify_email: boolean;
-          patient_id: string;
-          practitioner: string;
-          starts_at: string;
-        }[];
-      };
+          appointment_id: string
+          clinic_address: string
+          clinic_city: string
+          clinic_name: string
+          clinic_phone: string
+          email: string
+          ends_at: string
+          first_name: string
+          kind: string
+          notify_email: boolean
+          patient_id: string
+          practitioner: string
+          starts_at: string
+        }[]
+      }
       complete_appointment: {
         Args: {
-          _id: string;
-          _status: Database["public"]["Enums"]["appointment_status"];
-        };
-        Returns: undefined;
-      };
-      current_practitioner_id: { Args: never; Returns: string };
+          _id: string
+          _status: Database["public"]["Enums"]["appointment_status"]
+        }
+        Returns: undefined
+      }
+      current_practitioner_id: { Args: never; Returns: string }
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"];
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
-      is_aal2: { Args: never; Returns: boolean };
-      is_admin: { Args: never; Returns: boolean };
-      is_my_patient: { Args: { _patient: string }; Returns: boolean };
-      is_staff: { Args: never; Returns: boolean };
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_aal2: { Args: never; Returns: boolean }
+      is_admin: { Args: never; Returns: boolean }
+      is_my_patient: { Args: { _patient: string }; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
       log_record_access: {
-        Args: { _ip?: string; _patient: string };
-        Returns: boolean;
-      };
+        Args: { _ip?: string; _patient: string }
+        Returns: boolean
+      }
       notify: {
-        Args: { _message: string; _title: string; _type: string; _user: string };
-        Returns: undefined;
-      };
+        Args: { _message: string; _title: string; _type: string; _user: string }
+        Returns: undefined
+      }
       reschedule_appointment: {
-        Args: { _id: string; _new_slot: string };
-        Returns: string;
-      };
+        Args: { _id: string; _new_slot: string }
+        Returns: string
+      }
       staff_book_appointment: {
-        Args: { _patient: string; _reason: string; _slot_id: string };
-        Returns: string;
-      };
+        Args: { _patient: string; _reason: string; _slot_id: string }
+        Returns: string
+      }
       staff_list_users: {
-        Args: never;
+        Args: never
         Returns: {
-          created_at: string;
-          email: string;
-          first_name: string;
-          id: string;
-          is_active: boolean;
-          last_name: string;
-          roles: Database["public"]["Enums"]["app_role"][];
-        }[];
-      };
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          is_active: boolean
+          last_name: string
+          roles: Database["public"]["Enums"]["app_role"][]
+        }[]
+      }
       staff_search_patients: {
-        Args: { _q: string };
+        Args: { _q: string }
         Returns: {
-          date_of_birth: string;
-          email: string;
-          first_name: string;
-          id: string;
-          last_name: string;
-          phone: string;
-        }[];
-      };
-      validate_report: { Args: { _id: string }; Returns: undefined };
-      validate_result: { Args: { _id: string }; Returns: undefined };
+          date_of_birth: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string
+        }[]
+      }
+      validate_report: { Args: { _id: string }; Returns: undefined }
+      validate_result: { Args: { _id: string }; Returns: undefined }
       write_audit: {
         Args: {
-          _action: string;
-          _details: Json;
-          _entity: string;
-          _entity_id: string;
-          _ip?: string;
-          _severity?: string;
-        };
-        Returns: undefined;
-      };
-    };
+          _action: string
+          _details: Json
+          _entity: string
+          _entity_id: string
+          _ip?: string
+          _severity?: string
+        }
+        Returns: undefined
+      }
+    }
     Enums: {
-      app_role: "patient" | "practitioner" | "admin" | "staff";
-      appointment_status: "scheduled" | "confirmed" | "cancelled" | "completed" | "no_show";
-      report_status: "draft" | "validated";
-      result_status: "pending" | "validated";
-    };
+      app_role: "patient" | "practitioner" | "admin" | "staff"
+      appointment_status:
+        | "scheduled"
+        | "confirmed"
+        | "cancelled"
+        | "completed"
+        | "no_show"
+      report_status: "draft" | "validated"
+      result_status: "pending" | "validated"
+    }
     CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
-};
+      [_ in never]: never
+    }
+  }
+}
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
+      Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
       }
       ? R
       : never
-    : never;
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
+      Insert: infer I
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
+        Insert: infer I
       }
       ? I
       : never
-    : never;
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
+      Update: infer U
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
+        Update: infer U
       }
       ? U
       : never
-    : never;
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never;
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    keyof DefaultSchema["CompositeTypes"] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never;
+    : never
 
 export const Constants = {
   graphql_public: {
@@ -1186,9 +1239,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["patient", "practitioner", "admin", "staff"],
-      appointment_status: ["scheduled", "confirmed", "cancelled", "completed", "no_show"],
+      appointment_status: [
+        "scheduled",
+        "confirmed",
+        "cancelled",
+        "completed",
+        "no_show",
+      ],
       report_status: ["draft", "validated"],
       result_status: ["pending", "validated"],
     },
   },
-} as const;
+} as const
