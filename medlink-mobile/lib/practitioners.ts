@@ -6,6 +6,55 @@ const pick = (o: any, keys: string[]) => {
   return null;
 };
 
+export async function fetchUpcomingSlots(practitionerId: string): Promise<Slot[]> {
+  const { data, error } = await supabase
+    .from("availability_slots")
+    .select("*")
+    .eq("practitioner_id", practitionerId)
+    .limit(1000);
+  if (error) throw error;
+
+  return (data ?? [])
+    .map((s: any) => {
+      const start = pick(s, ["starts_at", "start_time", "start_at", "slot_start", "start"]);
+      const end = pick(s, ["ends_at", "end_time", "end_at", "slot_end", "end"]);
+      const taken =
+        s.is_booked === true ||
+        s.is_available === false ||
+        ["booked", "taken", "reserved"].includes(String(s.status ?? "").toLowerCase()) ||
+        s.appointment_id != null;
+      return start && !taken
+        ? { id: String(s.id), startsAt: new Date(start), endsAt: end ? new Date(end) : null }
+        : null;
+    })
+    .filter((s: Slot | null): s is Slot => !!s && s.startsAt.getTime() > Date.now() + 60 * 60 * 1000)
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+}
+export async function fetchPractitionerIdsAvailableOn(day: Date): Promise<Set<string>> {
+  const { data, error } = await supabase.from("availability_slots").select("*").limit(3000);
+  if (error) throw error;
+
+  const dayStart = new Date(day);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(day);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const ids = new Set<string>();
+  for (const s of (data ?? []) as any[]) {
+    const start = pick(s, ["starts_at", "start_time", "start_at", "slot_start", "start"]);
+    if (!start) continue;
+    const taken =
+      s.is_booked === true ||
+      s.is_available === false ||
+      ["booked", "taken", "reserved"].includes(String(s.status ?? "").toLowerCase()) ||
+      s.appointment_id != null;
+    const d = new Date(start);
+    if (!taken && d >= dayStart && d <= dayEnd && d.getTime() > Date.now() + 60 * 60 * 1000) {
+      ids.add(String(s.practitioner_id));
+    }
+  }
+  return ids;
+}
 export type Option = { id: string; name: string };
 export type Practitioner = {
   id: string;
@@ -55,7 +104,9 @@ export async function fetchPractitioners(): Promise<Practitioner[]> {
 
   // Si le nom n'est pas dans practitioners, on le cherche dans profiles
   let profiles: Record<string, any> = {};
-  const needNames = rows.filter((p: any) => !pick(p, ["full_name", "display_name", "name"]));
+const needNames = rows.filter(
+  (p: any) => !pick(p, ["full_name", "display_name", "name", "last_name"]),
+);
   if (needNames.length > 0) {
     const ids = needNames.map((p: any) => p.user_id ?? p.profile_id ?? p.id).filter(Boolean);
     const res = await supabase.from("profiles").select("*").in("id", ids);
@@ -66,26 +117,30 @@ export async function fetchPractitioners(): Promise<Practitioner[]> {
   const clName = Object.fromEntries(f.clinics.map((c) => [c.id, c.name]));
 
   return rows
-    .map((p: any) => {
-      const prof = profiles[p.user_id ?? p.profile_id ?? p.id];
-      const direct = pick(p, ["full_name", "display_name", "name"]);
-      const fromProfile =
-        pick(prof, ["full_name", "display_name", "name"]) ??
-        [prof?.first_name, prof?.last_name].filter(Boolean).join(" ");
-      const name = String(direct ?? (fromProfile || "Praticien"));
-      const spId = p.specialty_id != null ? String(p.specialty_id) : null;
-      const clId = clinicByPractitioner[String(p.id)] ?? null; // ✅ via practitioner_clinics
-      return {
-        id: String(p.id),
-        name: /^dr\.?\s/i.test(name) ? name : `Dr ${name}`,
-        specialtyId: spId,
-        specialty: (spId && spName[spId]) || pick(p, ["specialty", "specialty_name"]),
-        clinicId: clId,
-        clinic: clId ? (clName[clId] ?? null) : null,
-      };
-    })
-    .sort((a: Practitioner, b: Practitioner) => a.name.localeCompare(b.name, "fr"));
-}
+  .map((p: any) => {
+    const prof = profiles[p.user_id ?? p.profile_id ?? p.id];
+
+    // Same fields as the web: title + first_name + last_name
+    const fromRow = [p.title, p.first_name, p.last_name].filter(Boolean).join(" ");
+    const direct = pick(p, ["full_name", "display_name", "name"]);
+    const fromProfile =
+      pick(prof, ["full_name", "display_name", "name"]) ??
+      [prof?.first_name, prof?.last_name].filter(Boolean).join(" ");
+
+    const name = String(direct ?? (fromRow || fromProfile || "Praticien")).trim();
+    const spId = p.specialty_id != null ? String(p.specialty_id) : null;
+    const clId = clinicByPractitioner[String(p.id)] ?? null;
+
+    return {
+      id: String(p.id),
+      name: /^dr\.?\s/i.test(name) ? name : `Dr ${name}`,
+      specialtyId: spId,
+      specialty: (spId && spName[spId]) || pick(p, ["specialty", "specialty_name"]),
+      clinicId: clId,
+      clinic: clId ? (clName[clId] ?? null) : null,
+    };
+  })
+  .sort((a: Practitioner, b: Practitioner) => a.name.localeCompare(b.name, "fr"));}
 
 // Vraies disponibilités (table availability_slots), comme le web
 export async function fetchSlots(practitionerId: string, day: Date): Promise<Slot[]> {
