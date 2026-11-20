@@ -14,4 +14,15 @@ describe("friendlyError", () => {
     expect(friendlyError(new Error("Failed to fetch"))).toMatch(/Connexion au serveur/);
     expect(friendlyError({ message: "SLOT_OVERLAP" })).toMatch(/chevauche/);
   });
+
+  it("explains a double booking (same time, any clinic)", () => {
+    const msg = /déjà un rendez-vous à ce moment-là/;
+    expect(friendlyError({ message: "PATIENT_BUSY" })).toMatch(msg);
+    expect(
+      friendlyError({
+        message:
+          'conflicting key value violates exclusion constraint "appointments_patient_no_overlap"',
+      }),
+    ).toMatch(msg);
+  });
 });

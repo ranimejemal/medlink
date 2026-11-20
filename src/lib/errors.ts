@@ -18,6 +18,10 @@ const MESSAGES: Record<string, string> = {
   PRACTITIONER_ALREADY_LINKED: "Ce praticien a déjà un compte ou une invitation en cours.",
   INVALID_SLOT: "Créneau invalide : il doit être dans le futur et durer au plus 4 heures.",
   SLOT_OVERLAP: "Ce créneau chevauche un créneau existant.",
+  PATIENT_BUSY:
+    "Vous avez déjà un rendez-vous à ce moment-là (dans cette clinique ou une autre). Choisissez un autre créneau.",
+  appointments_patient_no_overlap:
+    "Vous avez déjà un rendez-vous à ce moment-là (dans cette clinique ou une autre). Choisissez un autre créneau.",
   PRACTITIONER_ABSENT:
     "Le praticien est absent sur cette période. Choisissez un autre créneau ou une autre date.",
   INVALID_PERIOD:
