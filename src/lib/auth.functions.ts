@@ -144,13 +144,11 @@ export const logSecurityEvent = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await context.supabase.rpc("write_audit", {
+    // log_event() only accepts known actions and sets the severity itself (OWASP A09).
+    await context.supabase.rpc("log_event", {
       _action: data.action,
       _entity: data.action.split(".")[0] ?? "auth",
       _entity_id: data.entityId ?? "",
-      _details: null as never,
-      _severity:
-        data.action === "mfa.failed" || data.action === "access.denied" ? "warning" : "info",
       _ip: clientIp() ?? "",
     });
     return { ok: true };

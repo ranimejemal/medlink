@@ -4,51 +4,44 @@
 
 Permettre à un administrateur MedLink de préparer une annonce de maintenance programmée et d'informer les utilisateurs de la plateforme.
 
-## Fonctionnement prévu
+## Fonctionnement
 
-1. L'administrateur accède à la page `/admin/maintenance`.
-2. Il renseigne le titre, le message, la date de début et la date de fin.
-3. Le formulaire vérifie que tous les champs sont remplis et que la date de fin est postérieure à la date de début.
-4. L'annonce est affichée sous forme de bannière informative aux utilisateurs.
-5. À terme, les annonces seront enregistrées dans Supabase et partagées entre les sessions.
+1. L'administrateur (connecté avec la double authentification) ouvre `/admin/maintenance`.
+2. Il renseigne le titre, le message, la date de début et la date de fin, puis prévisualise.
+3. Le formulaire vérifie que tous les champs sont remplis et que la fin est après le début.
+4. « Publier » enregistre l'annonce dans la table Supabase `maintenance_announcements`.
+5. Pendant la période, tous les utilisateurs connectés voient la bannière (`MaintenanceBanner`,
+   rechargée toutes les 60 secondes).
 
-## État actuel du développement
+## Sécurité
 
-- Page d'administration créée.
-- Formulaire de maintenance implémenté.
-- Prévisualisation locale disponible.
-- Composant `MaintenanceBanner` intégré dans l'interface.
-- Affichage de la bannière testé sur le tableau de bord Patient.
-- Stockage de démonstration avec `localStorage`, uniquement en environnement de développement.
+- RLS : tout utilisateur connecté lit les annonces actives ; seul un administrateur **avec MFA (AAL2)**
+  peut créer, modifier ou supprimer (policies `maintenance_insert/update/delete`).
+- La page vérifie aussi le niveau MFA avant d'envoyer l'annonce (message clair si absent).
 
-## Limites actuelles
+## Horaires du portail (US-49)
 
-Le formulaire administrateur n'a pas encore été testé avec un compte administrateur autorisé.
+La même page contient le réglage **Horaires du portail** : ouverture 6 h, fermeture 22 h (heure de Tunis).
+Hors horaires, une bannière l'explique et la base refuse toute nouvelle réservation (`PORTAL_CLOSED`).
+L'administrateur peut changer les heures ou désactiver la règle (par exemple pour une démonstration) ;
+chaque changement est écrit dans le journal d'audit (`portal.hours_changed`).
 
-Le stockage local n'est pas partagé entre navigateurs, appareils ou utilisateurs.
+## État
 
-La migration SQL a été préparée mais n'a pas encore été appliquée à Supabase.
-
-Aucune annonce réelle n'est publiée en production.
+- Migration `20261110000000_maintenance_announcements.sql` appliquée en production.
+- Publication réelle depuis l'interface administrateur, bannière lue depuis Supabase.
+- `src/lib/maintenance-demo.ts` (stockage `localStorage`) ne sert plus qu'aux tests unitaires.
 
 ## Fichiers concernés
 
 - `src/routes/_authenticated/admin/maintenance.tsx`
 - `src/components/medlink/MaintenanceBanner.tsx`
-- `src/components/medlink/AppShell.tsx`
-- `src/lib/maintenance-demo.ts`
+- `src/components/medlink/PortalHours.tsx` (US-49)
+- `src/lib/maintenance-validation.ts`
 - `supabase/migrations/20261110000000_maintenance_announcements.sql`
+- `supabase/migrations/20261126000000_data_rights_portal_hours.sql` (US-49)
 
-## Tests réalisés
+## Tests
 
-- Vérification TypeScript : `npx tsc --noEmit` — réussie.
-- Affichage de la bannière sur le tableau de bord Patient — réussi avec une annonce fictive.
-
-## Travaux restants
-
-- Obtenir l'accès au projet Supabase de l'équipe.
-- Vérifier et appliquer la migration dans un environnement autorisé.
-- Connecter le formulaire et la bannière aux données Supabase.
-- Tester les permissions administrateur et les règles RLS.
-- Tester la création, la modification et la désactivation des annonces.
-- Vérifier le comportement avant, pendant et après la période de maintenance.
+- `npx tsc --noEmit`, `npm test` (`maintenance.test.ts`, `maintenance-storage.test.ts`, `portal-hours.test.ts`).
+- Recette : voir `docs/tests.md` (lignes US-38 et US-49).

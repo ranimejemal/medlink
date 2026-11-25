@@ -607,6 +607,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      portal_hours: {
+        Row: {
+          close_hour: number;
+          enabled: boolean;
+          id: boolean;
+          open_hour: number;
+          updated_at: string;
+        };
+        Insert: {
+          close_hour?: number;
+          enabled?: boolean;
+          id?: boolean;
+          open_hour?: number;
+          updated_at?: string;
+        };
+        Update: {
+          close_hour?: number;
+          enabled?: boolean;
+          id?: boolean;
+          open_hour?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       practitioner_absences: {
         Row: {
           created_at: string;
@@ -1030,7 +1054,10 @@ export type Database = {
         Returns: undefined;
       };
       current_practitioner_id: { Args: never; Returns: string };
+      delete_my_account: { Args: { _confirm: string }; Returns: Json };
       direction_summary: { Args: { _days?: number }; Returns: Json };
+      export_my_data: { Args: never; Returns: Json };
+      portal_is_open: { Args: { _at?: string }; Returns: boolean };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -1042,6 +1069,16 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       is_my_patient: { Args: { _patient: string }; Returns: boolean };
       is_staff: { Args: never; Returns: boolean };
+      log_event: {
+        Args: {
+          _action: string;
+          _details?: Json;
+          _entity?: string;
+          _entity_id?: string;
+          _ip?: string;
+        };
+        Returns: undefined;
+      };
       log_record_access: {
         Args: { _ip?: string; _patient: string };
         Returns: boolean;

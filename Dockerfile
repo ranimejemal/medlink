@@ -17,5 +17,8 @@ ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0
 COPY --from=build /app/.output ./.output
 USER node
 EXPOSE 3000
+# Liveness probe used by Docker and docker compose (Kubernetes uses its own probes, see k8s/).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
 # Server-side secrets (SUPABASE_SERVICE_ROLE_KEY, AI_API_KEY, ...) are injected at runtime, never at build time.
 CMD ["node", ".output/server/index.mjs"]

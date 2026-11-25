@@ -1,0 +1,54 @@
+# US-37: nightly encrypted backup of the production database.
+# Needs two repository secrets (Settings > Secrets and variables > Actions):
+#   SUPABASE_DB_URL     Session pooler connection string, with the database password
+#   BACKUP_PASSPHRASE   long random passphrase, also kept offline: without it the backup cannot be opened
+# Without them the job does nothing. The backup is AES-256 encrypted before it leaves the runner
+# and kept 14 days as a workflow artifact. Restore: see docs/backup-restore.md.
+name: Backup
+
+on:
+  schedule:
+    - cron: "17 2 * * *" # 03:17 in Tunis
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check configuration
+        id: cfg
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::notice::Backup skipped: SUPABASE_DB_URL / BACKUP_PASSPHRASE secrets are not set."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Dump roles, schema and data
+        if: steps.cfg.outputs.skip != 'true'
+        run: |
+          mkdir dump
+          npx -y supabase@3.4.0 db dump --remote="$SUPABASE_DB_URL" --role-only -f dump/roles.sql
+          npx -y supabase@3.4.0 db dump --remote="$SUPABASE_DB_URL" -f dump/schema.sql
+          npx -y supabase@3.4.0 db dump --remote="$SUPABASE_DB_URL" --data-only --use-copy -f dump/data.sql
+          (cd dump && sha256sum *.sql > SHA256SUMS.txt)
+          test -s dump/schema.sql && test -s dump/data.sql
+      - name: Encrypt
+        if: steps.cfg.outputs.skip != 'true'
+        run: |
+          name="medlink-$(date -u +%Y%m%d-%H%M)"
+          tar czf - -C dump . | gpg --batch --yes --pinentry-mode loopback \
+            --passphrase "$BACKUP_PASSPHRASE" --symmetric --cipher-algo AES256 -o "$name.tar.gz.gpg"
+          rm -rf dump
+          echo "NAME=$name" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        if: steps.cfg.outputs.skip != 'true'
+        with:
+          name: ${{ env.NAME }}
+          path: ${{ env.NAME }}.tar.gz.gpg
+          retention-days: 14
+          if-no-files-found: error

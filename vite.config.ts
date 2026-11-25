@@ -12,6 +12,11 @@ const SECURITY_HEADERS = {
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  // US-61 (ZAP finding "CSP header not set"): forbids framing, plugins, <base> hijacking and
+  // form posts to other sites. script-src is not restricted yet: the SSR pages use inline scripts.
+  "Content-Security-Policy":
+    "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+  "Cross-Origin-Opener-Policy": "same-origin",
 };
 
 export default defineConfig(({ command, mode }) => {

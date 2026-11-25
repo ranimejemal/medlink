@@ -1,0 +1,10 @@
+# During node maintenance (drain), at least one MedLink pod always stays up.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: medlink
+  namespace: medlink
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: medlink }

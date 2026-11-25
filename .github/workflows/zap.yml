@@ -1,0 +1,30 @@
+# US-60: OWASP ZAP baseline scan (passive, safe for production: it only reads pages).
+# Run it from the Actions tab ("Run workflow") with the URL of the deployed site.
+# The HTML report is attached to the run as an artifact (zap-report).
+name: ZAP scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: URL to scan
+        required: true
+        default: https://medlink-fri3.vercel.app
+
+permissions:
+  contents: read
+
+jobs:
+  zap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ inputs.target }}
+          rules_file_name: .zap/rules.tsv
+          cmd_options: "-a -j"
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: zap-report
