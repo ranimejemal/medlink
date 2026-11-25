@@ -19,7 +19,10 @@ Deno.serve(async (req) => {
 
     const apiKey = Deno.env.get("OPENAI_API_KEY");
     if (!apiKey) {
-      return Response.json({ error: "OPENAI_API_KEY non configurée" }, { status: 500, headers: corsHeaders });
+      return Response.json(
+        { error: "OPENAI_API_KEY non configurée" },
+        { status: 500, headers: corsHeaders },
+      );
     }
 
     const res = await fetch("https://api.openai.com/v1/moderations", {

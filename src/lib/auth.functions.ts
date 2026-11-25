@@ -20,7 +20,7 @@ function clientIp(): string | null {
  * 15 minutes lock the account. Every attempt is recorded and audited with IP.
  */
 export const secureSignIn = createServerFn({ method: "POST" })
-  .validator((d) =>
+  .inputValidator((d) =>
     z
       .object({
         email: z.string().trim().toLowerCase().email().max(255),
@@ -126,7 +126,7 @@ export const secureSignIn = createServerFn({ method: "POST" })
 /** Records a security event for the signed-in user (logout, MFA, password change) with IP. */
 export const logSecurityEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) =>
+  .inputValidator((d) =>
     z
       .object({
         action: z.enum([

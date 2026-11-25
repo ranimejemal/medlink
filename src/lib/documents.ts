@@ -15,10 +15,7 @@ export type PatientDocument = {
 };
 
 export async function listDocuments(patientId?: string): Promise<PatientDocument[]> {
-  let q = (supabase as any)
-    .from("patient_documents")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let q = supabase.from("patient_documents").select("*").order("created_at", { ascending: false });
   if (patientId) q = q.eq("patient_id", patientId);
   const { data, error } = await q;
   if (error) throw error;

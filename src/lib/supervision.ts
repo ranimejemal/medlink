@@ -1,7 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-// Les nouvelles fonctions SQL ne sont pas encore dans les types générés : appel non typé
-const rpc = (name: string, args?: Record<string, unknown>) => (supabase as any).rpc(name, args);
+type SupervisionFn = "anonymized_stats" | "clinic_supervision" | "direction_summary";
+const rpc = (name: SupervisionFn, args?: Record<string, unknown>) =>
+  supabase.rpc(name, args as never);
 
 const MESSAGES: Record<string, string> = {
   FORBIDDEN: "Accès réservé : votre rôle ne permet pas de consulter ces données.",
@@ -15,21 +16,41 @@ function fail(error: { message?: string }): never {
 }
 
 export type ClinicStat = {
-  clinic_id: string; name: string; city: string; practitioners: number;
-  total: number; completed: number; cancelled: number; no_show: number;
-  upcoming: number; slots_14d: number; booked_14d: number;
+  clinic_id: string;
+  name: string;
+  city: string;
+  practitioners: number;
+  total: number;
+  completed: number;
+  cancelled: number;
+  no_show: number;
+  upcoming: number;
+  slots_14d: number;
+  booked_14d: number;
 };
 export type PeriodStats = {
-  booked: number; online: number; by_staff: number; cancelled: number; no_show: number; completed: number;
+  booked: number;
+  online: number;
+  by_staff: number;
+  cancelled: number;
+  no_show: number;
+  completed: number;
 };
 export type DirectionSummary = {
-  period_days: number; current: PeriodStats; previous: PeriodStats;
+  period_days: number;
+  current: PeriodStats;
+  previous: PeriodStats;
   new_patients: { current: number; previous: number };
   weekly: { week: string; online: number; by_staff: number }[];
 };
 export type StatRow = {
-  month: string; city: string; specialty: string;
-  appointments: number; completed: number; cancelled: number; no_show: number;
+  month: string;
+  city: string;
+  specialty: string;
+  appointments: number;
+  completed: number;
+  cancelled: number;
+  no_show: number;
 };
 export type AnonymizedStats = { k: number; rows: StatRow[] };
 
@@ -60,7 +81,9 @@ export function toCsv(rows: StatRow[]): string {
     return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = rows.map((r) =>
-    [r.month, r.city, r.specialty, r.appointments, r.completed, r.cancelled, r.no_show].map(esc).join(";"),
+    [r.month, r.city, r.specialty, r.appointments, r.completed, r.cancelled, r.no_show]
+      .map(esc)
+      .join(";"),
   );
   return [head.join(";"), ...lines].join("\r\n");
 }

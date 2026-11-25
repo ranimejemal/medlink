@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -50,9 +49,7 @@ export function SecurityAlerts() {
     try {
       const { data, error: fetchError } = await supabase
         .from("audit_logs")
-        .select(
-          "id, created_at, action, severity, user_email, ip_address, details"
-        )
+        .select("id, created_at, action, severity, user_email, ip_address, details")
         .like("action", "security.%")
         .order("created_at", { ascending: false })
         .limit(50);
@@ -77,9 +74,7 @@ export function SecurityAlerts() {
 
       setAlerts(normalized);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Une erreur est survenue."
-      );
+      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
     } finally {
       setLoading(false);
     }
@@ -102,9 +97,7 @@ export function SecurityAlerts() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#0b1f3a]">
-            Alertes de sécurité
-          </h1>
+          <h1 className="text-2xl font-bold text-[#0b1f3a]">Alertes de sécurité</h1>
 
           <p className="text-sm text-slate-500">
             Détection automatique d'accès suspects. Mise à jour toutes les minutes.
@@ -113,47 +106,28 @@ export function SecurityAlerts() {
 
         <span
           className={`rounded-full px-3 py-1 text-sm font-semibold ${
-            last24h > 0
-              ? "bg-red-100 text-red-700"
-              : "bg-emerald-100 text-emerald-700"
+            last24h > 0 ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
           }`}
         >
-          {last24h > 0
-            ? `${last24h} alerte(s) sur 24 h`
-            : "Aucune alerte sur 24 h"}
+          {last24h > 0 ? `${last24h} alerte(s) sur 24 h` : "Aucune alerte sur 24 h"}
         </span>
       </div>
 
-      {loading && (
-        <p className="text-sm text-slate-500">Chargement…</p>
-      )}
+      {loading && <p className="text-sm text-slate-500">Chargement…</p>}
 
-      {error && (
-        <p className="text-sm text-red-600">
-          Erreur : {error}
-        </p>
-      )}
+      {error && <p className="text-sm text-red-600">Erreur : {error}</p>}
 
       {!loading && !error && alerts.length === 0 && (
-        <p className="text-sm text-slate-500">
-          Aucune alerte enregistrée.
-        </p>
+        <p className="text-sm text-slate-500">Aucune alerte enregistrée.</p>
       )}
 
       <ul className="space-y-3">
         {alerts.map((a) => (
-          <li
-            key={a.id}
-            className="rounded-xl border border-red-200 bg-white p-4 shadow-sm"
-          >
+          <li key={a.id} className="rounded-xl border border-red-200 bg-white p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold text-red-700">
-                {LABELS[a.action] ?? a.action}
-              </p>
+              <p className="font-semibold text-red-700">{LABELS[a.action] ?? a.action}</p>
 
-              <span className="text-xs text-slate-500">
-                {fmt(a.created_at)}
-              </span>
+              <span className="text-xs text-slate-500">{fmt(a.created_at)}</span>
             </div>
 
             <p className="mt-1 text-sm text-slate-700">

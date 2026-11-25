@@ -127,7 +127,7 @@ Fichier `.env` à la racine (jamais commité : il est dans `.gitignore`).
 | `VITE_SUPABASE_URL`             | oui         | Même URL, pour le navigateur                                                              |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | oui         | Même clé publique, pour le navigateur                                                     |
 | `SUPABASE_SERVICE_ROLE_KEY`     | **oui**     | Clé secrète `sb_secret_…`. **Serveur uniquement.** Contourne toute la sécurité de la base |
-| `AI_API_KEY`                    | non*        | Clé de l'API IA. _Sans elle, la page « Nouvelle demande » ne fonctionne pas_              |
+| `AI_API_KEY`                    | non\*       | Clé de l'API IA. _Sans elle, la page « Nouvelle demande » ne fonctionne pas_              |
 | `AI_BASE_URL`                   | non         | Par défaut `https://api.openai.com/v1`                                                    |
 | `AI_MODEL`                      | non         | Par défaut `gpt-4o-mini`                                                                  |
 | `CRON_SECRET`                   | non         | Protège les tâches planifiées (rappels). Générer : `openssl rand -hex 32`                 |

@@ -2,7 +2,15 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, ExternalLink, FileText, FlaskConical, Image as ImageIcon, ShieldCheck, Trash2 } from "lucide-react";
+import {
+  Download,
+  ExternalLink,
+  FileText,
+  FlaskConical,
+  Image as ImageIcon,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -114,7 +122,7 @@ function DocumentsPage() {
   const uploads = useQuery({
     queryKey: ["patient", "uploaded-documents"],
     queryFn: async (): Promise<UploadedDoc[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("patient_documents")
         .select("*")
         .order("created_at", { ascending: false });
@@ -127,7 +135,7 @@ function DocumentsPage() {
     mutationFn: async (d: UploadedDoc) => {
       const rm = await supabase.storage.from(UPLOAD_BUCKET).remove([d.storage_path]);
       if (rm.error) throw rm.error;
-      const { error } = await (supabase as any).from("patient_documents").delete().eq("id", d.id);
+      const { error } = await supabase.from("patient_documents").delete().eq("id", d.id);
       if (error) throw error;
     },
     onSuccess: () => {

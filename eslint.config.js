@@ -6,7 +6,8 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  // medlink-mobile is a separate Expo project with its own tooling.
+  { ignores: ["dist", ".output", ".vinxi", ".vercel", "medlink-mobile", "supabase/functions"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

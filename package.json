@@ -13,7 +13,6 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  
   "overrides": {
     "rolldown": "1.2.1"
   },
@@ -99,5 +98,4 @@
     "vite": "8.1.5",
     "vitest": "^4.1.10"
   }
-  
 }
