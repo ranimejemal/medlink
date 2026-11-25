@@ -27,6 +27,8 @@ import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminMaintenanceRouteImport } from './routes/_authenticated/admin/maintenance'
 import { Route as AuthenticatedAdminPractitionersRouteImport } from './routes/_authenticated/admin/practitioners'
 import { Route as AuthenticatedAdminSecurityRouteImport } from './routes/_authenticated/admin/security'
+import { Route as AuthenticatedAdminSecurityAlertsRouteImport } from './routes/_authenticated/admin/security-alerts'
+import { Route as AuthenticatedAdminSupervisionRouteImport } from './routes/_authenticated/admin/supervision'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient/dashboard'
 import { Route as AuthenticatedPatientDocumentsRouteImport } from './routes/_authenticated/patient/documents'
@@ -42,6 +44,7 @@ import { Route as AuthenticatedPractitionerReportsRouteImport } from './routes/_
 import { Route as AuthenticatedStaffBookRouteImport } from './routes/_authenticated/staff/book'
 import { Route as AuthenticatedStaffDashboardRouteImport } from './routes/_authenticated/staff/dashboard'
 import { Route as AuthenticatedStaffSecurityRouteImport } from './routes/_authenticated/staff/security'
+import { Route as AuthenticatedStaffSupervisionRouteImport } from './routes/_authenticated/staff/supervision'
 import { Route as AuthenticatedStaffUsersRouteImport } from './routes/_authenticated/staff/users'
 import { Route as ApiCronAppointmentEmailsRouteImport } from './routes/api/cron/appointment-emails'
 import { Route as AuthenticatedPatientAppointmentsIndexRouteImport } from './routes/_authenticated/patient/appointments/index'
@@ -144,6 +147,18 @@ const AuthenticatedAdminSecurityRoute =
     path: '/security',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminSecurityAlertsRoute =
+  AuthenticatedAdminSecurityAlertsRouteImport.update({
+    id: '/security-alerts',
+    path: '/security-alerts',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSupervisionRoute =
+  AuthenticatedAdminSupervisionRouteImport.update({
+    id: '/supervision',
+    path: '/supervision',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -232,6 +247,12 @@ const AuthenticatedStaffSecurityRoute =
     path: '/security',
     getParentRoute: () => AuthenticatedStaffRouteRoute,
   } as any)
+const AuthenticatedStaffSupervisionRoute =
+  AuthenticatedStaffSupervisionRouteImport.update({
+    id: '/supervision',
+    path: '/supervision',
+    getParentRoute: () => AuthenticatedStaffRouteRoute,
+  } as any)
 const AuthenticatedStaffUsersRoute = AuthenticatedStaffUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -286,6 +307,8 @@ export interface FileRoutesByFullPath {
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
   '/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
+  '/admin/security-alerts': typeof AuthenticatedAdminSecurityAlertsRoute
+  '/admin/supervision': typeof AuthenticatedAdminSupervisionRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/patient/documents': typeof AuthenticatedPatientDocumentsRoute
@@ -301,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/staff/book': typeof AuthenticatedStaffBookRoute
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
+  '/staff/supervision': typeof AuthenticatedStaffSupervisionRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
   '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
@@ -326,6 +350,8 @@ export interface FileRoutesByTo {
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
   '/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
   '/admin/security': typeof AuthenticatedAdminSecurityRoute
+  '/admin/security-alerts': typeof AuthenticatedAdminSecurityAlertsRoute
+  '/admin/supervision': typeof AuthenticatedAdminSupervisionRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/patient/documents': typeof AuthenticatedPatientDocumentsRoute
@@ -341,6 +367,7 @@ export interface FileRoutesByTo {
   '/staff/book': typeof AuthenticatedStaffBookRoute
   '/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/staff/security': typeof AuthenticatedStaffSecurityRoute
+  '/staff/supervision': typeof AuthenticatedStaffSupervisionRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
   '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
@@ -368,6 +395,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
   '/_authenticated/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
   '/_authenticated/admin/security': typeof AuthenticatedAdminSecurityRoute
+  '/_authenticated/admin/security-alerts': typeof AuthenticatedAdminSecurityAlertsRoute
+  '/_authenticated/admin/supervision': typeof AuthenticatedAdminSupervisionRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/_authenticated/patient/documents': typeof AuthenticatedPatientDocumentsRoute
@@ -383,6 +412,7 @@ export interface FileRoutesById {
   '/_authenticated/staff/book': typeof AuthenticatedStaffBookRoute
   '/_authenticated/staff/dashboard': typeof AuthenticatedStaffDashboardRoute
   '/_authenticated/staff/security': typeof AuthenticatedStaffSecurityRoute
+  '/_authenticated/staff/supervision': typeof AuthenticatedStaffSupervisionRoute
   '/_authenticated/staff/users': typeof AuthenticatedStaffUsersRoute
   '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
   '/_authenticated/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
@@ -410,6 +440,8 @@ export interface FileRouteTypes {
     | '/admin/maintenance'
     | '/admin/practitioners'
     | '/admin/security'
+    | '/admin/security-alerts'
+    | '/admin/supervision'
     | '/admin/users'
     | '/patient/dashboard'
     | '/patient/documents'
@@ -425,6 +457,7 @@ export interface FileRouteTypes {
     | '/staff/book'
     | '/staff/dashboard'
     | '/staff/security'
+    | '/staff/supervision'
     | '/staff/users'
     | '/api/cron/appointment-emails'
     | '/patient/appointments/new'
@@ -450,6 +483,8 @@ export interface FileRouteTypes {
     | '/admin/maintenance'
     | '/admin/practitioners'
     | '/admin/security'
+    | '/admin/security-alerts'
+    | '/admin/supervision'
     | '/admin/users'
     | '/patient/dashboard'
     | '/patient/documents'
@@ -465,6 +500,7 @@ export interface FileRouteTypes {
     | '/staff/book'
     | '/staff/dashboard'
     | '/staff/security'
+    | '/staff/supervision'
     | '/staff/users'
     | '/api/cron/appointment-emails'
     | '/patient/appointments/new'
@@ -491,6 +527,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/maintenance'
     | '/_authenticated/admin/practitioners'
     | '/_authenticated/admin/security'
+    | '/_authenticated/admin/security-alerts'
+    | '/_authenticated/admin/supervision'
     | '/_authenticated/admin/users'
     | '/_authenticated/patient/dashboard'
     | '/_authenticated/patient/documents'
@@ -506,6 +544,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/book'
     | '/_authenticated/staff/dashboard'
     | '/_authenticated/staff/security'
+    | '/_authenticated/staff/supervision'
     | '/_authenticated/staff/users'
     | '/api/cron/appointment-emails'
     | '/_authenticated/patient/appointments/new'
@@ -655,6 +694,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSecurityRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/security-alerts': {
+      id: '/_authenticated/admin/security-alerts'
+      path: '/security-alerts'
+      fullPath: '/admin/security-alerts'
+      preLoaderRoute: typeof AuthenticatedAdminSecurityAlertsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/supervision': {
+      id: '/_authenticated/admin/supervision'
+      path: '/supervision'
+      fullPath: '/admin/supervision'
+      preLoaderRoute: typeof AuthenticatedAdminSupervisionRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
       path: '/users'
@@ -760,6 +813,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffSecurityRouteImport
       parentRoute: typeof AuthenticatedStaffRouteRoute
     }
+    '/_authenticated/staff/supervision': {
+      id: '/_authenticated/staff/supervision'
+      path: '/supervision'
+      fullPath: '/staff/supervision'
+      preLoaderRoute: typeof AuthenticatedStaffSupervisionRouteImport
+      parentRoute: typeof AuthenticatedStaffRouteRoute
+    }
     '/_authenticated/staff/users': {
       id: '/_authenticated/staff/users'
       path: '/users'
@@ -810,6 +870,8 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminMaintenanceRoute: typeof AuthenticatedAdminMaintenanceRoute
   AuthenticatedAdminPractitionersRoute: typeof AuthenticatedAdminPractitionersRoute
   AuthenticatedAdminSecurityRoute: typeof AuthenticatedAdminSecurityRoute
+  AuthenticatedAdminSecurityAlertsRoute: typeof AuthenticatedAdminSecurityAlertsRoute
+  AuthenticatedAdminSupervisionRoute: typeof AuthenticatedAdminSupervisionRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
 }
 
@@ -819,6 +881,9 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminMaintenanceRoute: AuthenticatedAdminMaintenanceRoute,
     AuthenticatedAdminPractitionersRoute: AuthenticatedAdminPractitionersRoute,
     AuthenticatedAdminSecurityRoute: AuthenticatedAdminSecurityRoute,
+    AuthenticatedAdminSecurityAlertsRoute:
+      AuthenticatedAdminSecurityAlertsRoute,
+    AuthenticatedAdminSupervisionRoute: AuthenticatedAdminSupervisionRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   }
 
@@ -893,6 +958,7 @@ interface AuthenticatedStaffRouteRouteChildren {
   AuthenticatedStaffBookRoute: typeof AuthenticatedStaffBookRoute
   AuthenticatedStaffDashboardRoute: typeof AuthenticatedStaffDashboardRoute
   AuthenticatedStaffSecurityRoute: typeof AuthenticatedStaffSecurityRoute
+  AuthenticatedStaffSupervisionRoute: typeof AuthenticatedStaffSupervisionRoute
   AuthenticatedStaffUsersRoute: typeof AuthenticatedStaffUsersRoute
 }
 
@@ -901,6 +967,7 @@ const AuthenticatedStaffRouteRouteChildren: AuthenticatedStaffRouteRouteChildren
     AuthenticatedStaffBookRoute: AuthenticatedStaffBookRoute,
     AuthenticatedStaffDashboardRoute: AuthenticatedStaffDashboardRoute,
     AuthenticatedStaffSecurityRoute: AuthenticatedStaffSecurityRoute,
+    AuthenticatedStaffSupervisionRoute: AuthenticatedStaffSupervisionRoute,
     AuthenticatedStaffUsersRoute: AuthenticatedStaffUsersRoute,
   }
 
