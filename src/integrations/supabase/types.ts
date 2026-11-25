@@ -1,4 +1,4 @@
-﻿export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -571,6 +571,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      patient_documents: {
+        Row: {
+          category: string;
+          created_at: string;
+          id: string;
+          mime_type: string;
+          name: string;
+          patient_id: string;
+          shared_with_doctor: boolean;
+          size_bytes: number;
+          storage_path: string;
+        };
+        Insert: {
+          category?: string;
+          created_at?: string;
+          id?: string;
+          mime_type: string;
+          name: string;
+          patient_id?: string;
+          shared_with_doctor?: boolean;
+          size_bytes: number;
+          storage_path: string;
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          id?: string;
+          mime_type?: string;
+          name?: string;
+          patient_id?: string;
+          shared_with_doctor?: boolean;
+          size_bytes?: number;
+          storage_path?: string;
+        };
+        Relationships: [];
+      };
       practitioner_absences: {
         Row: {
           created_at: string;
@@ -961,6 +997,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      anonymized_stats: { Args: { _from: string; _to: string }; Returns: Json };
       book_appointment: {
         Args: { _reason: string; _slot_id: string };
         Returns: string;
@@ -984,6 +1021,7 @@ export type Database = {
           starts_at: string;
         }[];
       };
+      clinic_supervision: { Args: { _days?: number }; Returns: Json };
       complete_appointment: {
         Args: {
           _id: string;
@@ -992,6 +1030,7 @@ export type Database = {
         Returns: undefined;
       };
       current_practitioner_id: { Args: never; Returns: string };
+      direction_summary: { Args: { _days?: number }; Returns: Json };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
