@@ -56,7 +56,11 @@ export default defineConfig(({ command, mode }) => {
               preset:
                 process.env["NITRO_PRESET"] ?? (process.env["VERCEL"] ? "vercel" : "node-server"),
               // US-44 security headers, also sent where Caddy is not in front (e.g. Vercel).
-              routeRules: { "/**": { headers: SECURITY_HEADERS } },
+              routeRules: {
+                "/**": { headers: SECURITY_HEADERS },
+                // US-61 (ZAP 10021): Vercel stops at the /assets route, so repeat the headers there.
+                "/assets/**": { headers: SECURITY_HEADERS },
+              },
             }),
           ]
         : []),

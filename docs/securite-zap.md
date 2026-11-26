@@ -41,6 +41,24 @@ docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://hos
 
 ## Résultats à remplir
 
-| Date | URL scannée | Hautes | Moyennes | Basses | Informatives | Rapport |
-| ---- | ----------- | -----: | -------: | -----: | -----------: | ------- |
-|      |             |        |          |        |              |         |
+| Date       | URL scannée                       | Échecs (FAIL) | Avertissements (WARN) | Règles OK (PASS) | Rapport                                                                                           |
+| ---------- | --------------------------------- | ------------: | --------------------: | ---------------: | ------------------------------------------------------------------------------------------------- |
+| 26/11/2026 | `https://medlink-fri3.vercel.app` |             0 |                    10 |               60 | [run #1](https://github.com/ranimejemal/medlink/actions/runs/45787003892) (artefact `zap-report`) |
+
+### Analyse des 10 avertissements du 26/11/2026
+
+| Règle ZAP                                         | Cause                                                                                       | Décision                                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 10021 X-Content-Type-Options manquant (`/assets`) | Sur Vercel, la route `/assets/*` (cache) s'arrêtait avant la route des en-têtes de sécurité | **Corrigé** : en-têtes de sécurité ajoutés aussi sur `/assets/**` (`vite.config.ts`)   |
+| 10063 Permissions-Policy manquant (`/assets`)     | Même cause                                                                                  | **Corrigé** (même correction)                                                          |
+| 10055 CSP : directive générique                   | Pas de `script-src` (scripts en ligne du rendu serveur)                                     | Risque accepté (voir ci-dessus)                                                        |
+| 10098 Cross-Domain Misconfiguration               | Vercel sert les fichiers statiques avec `Access-Control-Allow-Origin: *`                    | Accepté : fichiers publics (JS/CSS), aucune donnée ; les API exigent un jeton          |
+| 10094 Base64 Disclosure                           | Chaînes base64 dans le code minifié et la clé publique Supabase (publique par conception)   | Faux positif                                                                           |
+| 10015 Cache-control à revoir                      | Pages HTML publiques (accueil, login…) mises en cache par le CDN                            | Accepté : pages sans données personnelles ; les données passent par l'API authentifiée |
+| 10050 Retrieved from Cache                        | Réponses servies par le CDN Vercel                                                          | Informatif, attendu avec un CDN                                                        |
+| 90003 Sub Resource Integrity manquant             | Scripts servis par notre propre domaine (aucun CDN externe)                                 | Accepté : SRI utile seulement pour des scripts tiers                                   |
+| 90004 Cross-Origin-Embedder-Policy manquant       | COEP `require-corp` bloquerait les images/fichiers Supabase Storage                         | Accepté ; COOP `same-origin` est déjà en place                                         |
+| 90005 Sec-Fetch-Dest manquant                     | En-tête envoyé par le navigateur, pas par le serveur (ZAP ne l'envoie pas)                  | Faux positif                                                                           |
+
+Aucune alerte de niveau élevé. Après déploiement de la correction, relancer le scan : 10021 et
+10063 doivent disparaître (8 avertissements attendus, tous justifiés ci-dessus).
