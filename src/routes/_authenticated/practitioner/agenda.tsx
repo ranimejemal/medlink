@@ -309,6 +309,15 @@ function AvailabilityTab() {
                 <AlertDescription>{msg}</AlertDescription>
               </Alert>
             )}
+            {!me.data.practitioner_clinics.length && (
+              <Alert className="mb-3">
+                <AlertDescription>
+                  Aucune clinique ne vous est affectée : vous ne pouvez pas encore publier de
+                  créneaux. Demandez à l'administrateur de vous affecter une clinique
+                  (Administration → Praticiens).
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="grid gap-3 sm:grid-cols-5">
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="c">Clinique</Label>
@@ -356,7 +365,11 @@ function AvailabilityTab() {
                 />
               </div>
             </div>
-            <Button className="mt-4" onClick={() => add.mutate()} disabled={add.isPending}>
+            <Button
+              className="mt-4"
+              onClick={() => add.mutate()}
+              disabled={add.isPending || !me.data.practitioner_clinics.length}
+            >
               {add.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Ajouter
             </Button>
           </Panel>

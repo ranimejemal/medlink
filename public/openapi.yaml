@@ -1,0 +1,448 @@
+openapi: 3.0.3
+info:
+  title: MedLink API
+  version: "3.0.0"
+  description: |
+    API du portail MedLink (prise de rendez-vous et dossier médical, cliniques de Tunis).
+
+    MedLink a deux parties :
+    - **Serveur MedLink** (Node.js, TanStack Start) : sondes de santé et tâche planifiée des e-mails.
+    - **API de données Supabase** (PostgREST) : tables et fonctions SQL appelées par l'interface.
+      Chaque appel porte le jeton de l'utilisateur connecté ; la sécurité est appliquée **dans la base**
+      (RLS sur chaque table, fonctions `SECURITY DEFINER`, MFA AAL2 pour praticiens et administrateurs).
+
+    Toutes les fonctions refusent un appelant non autorisé avec l'erreur `FORBIDDEN`.
+  contact:
+    name: Équipe MedLink
+  license:
+    name: Propriétaire — projet académique
+servers:
+  - url: /
+    description: Serveur MedLink (même domaine que l'interface)
+  - url: https://lmocoknimijxqegbxbyg.supabase.co/rest/v1
+    description: API de données Supabase (PostgREST)
+tags:
+  - name: Supervision
+    description: Sondes de santé (Docker, Kubernetes, monitoring)
+  - name: Tâches planifiées
+    description: Appels serveur à serveur protégés par CRON_SECRET
+  - name: Rendez-vous
+    description: Réservation, annulation, déplacement (patient)
+  - name: Praticien
+    description: Agenda, absences, validation (MFA obligatoire)
+  - name: Accueil
+    description: Personnel administratif des cliniques
+  - name: Administration
+    description: Supervision, statistiques, journal d'audit (MFA obligatoire)
+  - name: Données personnelles
+    description: Droits du patient sur ses données (US-16)
+paths:
+  /api/health:
+    get:
+      operationId: getHealth
+      tags: [Supervision]
+      summary: Sonde de vie (liveness)
+      description: Répond tant que le processus Node tourne. N'appelle pas la base.
+      servers: [{ url: / }]
+      security: []
+      responses:
+        "200":
+          description: Le serveur est vivant
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  uptime_s: { type: integer, example: 3600 }
+  /api/ready:
+    get:
+      operationId: getReady
+      tags: [Supervision]
+      summary: Sonde de disponibilité (readiness)
+      description: 200 si la base répond en moins de 3 s, sinon 503. Aucun détail d'erreur n'est renvoyé.
+      servers: [{ url: / }]
+      security: []
+      responses:
+        "200":
+          description: Prêt à recevoir du trafic
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Readiness" }
+        "503":
+          description: Base de données indisponible
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Readiness" }
+  /api/cron/appointment-emails:
+    post:
+      operationId: cronAppointmentEmails
+      tags: [Tâches planifiées]
+      summary: Envoie les confirmations et rappels de rendez-vous (US-08, US-12, US-48)
+      description: |
+        Appelée chaque minute par pg_cron (Supabase) ou le CronJob Kubernetes.
+        Chaque e-mail n'est envoyé qu'une fois, même si deux appels ont lieu en même temps.
+      servers: [{ url: / }]
+      security: [{ cronSecret: [] }]
+      responses:
+        "200":
+          description: Résultat du passage
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent: { type: integer }
+                  skipped: { type: integer, description: Patient ayant désactivé les e-mails }
+                  failed: { type: integer }
+        "401": { description: Secret absent ou incorrect }
+        "500": { description: SMTP non configuré ou base indisponible }
+  /rpc/book_appointment:
+    post:
+      operationId: bookAppointment
+      tags: [Rendez-vous]
+      summary: Réserver un créneau (patient)
+      description: |
+        Verrouille le créneau, vérifie qu'il est libre, dans le futur, pendant les heures d'ouverture
+        (6 h – 22 h, US-49), hors absence du praticien (US-21), sans chevauchement avec un autre
+        rendez-vous du patient dans n'importe quelle clinique, et au plus 5 rendez-vous à venir.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [_slot_id, _reason]
+              properties:
+                _slot_id: { type: string, format: uuid }
+                _reason: { type: string, maxLength: 500 }
+      responses:
+        "200":
+          description: Identifiant du rendez-vous créé
+          content: { application/json: { schema: { type: string, format: uuid } } }
+        "400": { $ref: "#/components/responses/BusinessError" }
+  /rpc/cancel_appointment:
+    post:
+      operationId: cancelAppointment
+      tags: [Rendez-vous]
+      summary: Annuler un rendez-vous (patient, praticien ou accueil)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [_id]
+              properties: { _id: { type: string, format: uuid } }
+      responses:
+        "204": { description: "Annulé, créneau libéré, patient notifié" }
+        "400": { $ref: "#/components/responses/BusinessError" }
+  /rpc/reschedule_appointment:
+    post:
+      operationId: rescheduleAppointment
+      tags: [Rendez-vous]
+      summary: Déplacer un rendez-vous vers un autre créneau
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [_id, _new_slot]
+              properties:
+                _id: { type: string, format: uuid }
+                _new_slot: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Identifiant du nouveau rendez-vous
+          content: { application/json: { schema: { type: string, format: uuid } } }
+        "400": { $ref: "#/components/responses/BusinessError" }
+  /availability_slots:
+    get:
+      operationId: getAvailabilitySlots
+      tags: [Rendez-vous]
+      summary: Créneaux libres
+      parameters:
+        - { name: practitioner_id, in: query, schema: { type: string }, example: "eq.<uuid>" }
+        - { name: is_booked, in: query, schema: { type: string }, example: eq.false }
+        - {
+            name: starts_at,
+            in: query,
+            schema: { type: string },
+            example: "gte.2026-12-01T00:00:00Z",
+          }
+      responses:
+        "200":
+          description: Liste des créneaux
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Slot" } }
+  /appointments:
+    get:
+      operationId: getAppointments
+      tags: [Rendez-vous]
+      summary: Mes rendez-vous
+      description: RLS — un patient ne voit que les siens, un praticien ceux de ses agendas, l'accueil ceux des cliniques.
+      responses:
+        "200":
+          description: Liste
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Appointment" } }
+  /rpc/block_period:
+    post:
+      operationId: blockPeriod
+      tags: [Praticien]
+      summary: Bloquer une période (congé, formation) — US-21
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [_starts, _ends]
+              properties:
+                _starts: { type: string, format: date-time }
+                _ends: { type: string, format: date-time }
+                _reason: { type: string, maxLength: 200 }
+                _practitioner:
+                  { type: string, format: uuid, description: Accueil / admin uniquement }
+      responses:
+        "200":
+          description: Absence créée, créneaux libres supprimés, rendez-vous en conflit listés
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  absence_id: { type: string, format: uuid }
+                  removed_slots: { type: integer }
+                  conflicts: { type: array, items: { type: object } }
+        "400": { $ref: "#/components/responses/BusinessError" }
+  /rpc/validate_report:
+    post:
+      operationId: validateReport
+      tags: [Praticien]
+      summary: Valider un compte rendu (MFA requise) — US-24
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              { type: object, required: [_id], properties: { _id: { type: string, format: uuid } } }
+      responses:
+        "204": { description: "Validé, patient notifié, action journalisée" }
+        "400": { $ref: "#/components/responses/BusinessError" }
+  /rpc/validate_result:
+    post:
+      operationId: validateResult
+      tags: [Praticien]
+      summary: Valider un résultat d'analyse (MFA requise) — US-25
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              { type: object, required: [_id], properties: { _id: { type: string, format: uuid } } }
+      responses:
+        "204": { description: Validé }
+        "400": { $ref: "#/components/responses/BusinessError" }
+  /rpc/staff_book_appointment:
+    post:
+      operationId: staffBookAppointment
+      tags: [Accueil]
+      summary: Prendre un rendez-vous pour un patient au téléphone — US-30
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [_patient, _slot_id, _reason]
+              properties:
+                _patient: { type: string, format: uuid }
+                _slot_id: { type: string, format: uuid }
+                _reason: { type: string, maxLength: 500 }
+      responses:
+        "200":
+          description: Identifiant du rendez-vous
+          content: { application/json: { schema: { type: string, format: uuid } } }
+        "400": { $ref: "#/components/responses/BusinessError" }
+  /rpc/clinic_supervision:
+    post:
+      operationId: clinicSupervision
+      tags: [Administration]
+      summary: Supervision des cliniques (admin, accueil) — US-31
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { _days: { type: integer, default: 30 } } }
+      responses:
+        "200":
+          {
+            description: Indicateurs par clinique,
+            content: { application/json: { schema: { type: object } } },
+          }
+  /rpc/direction_summary:
+    post:
+      operationId: directionSummary
+      tags: [Administration]
+      summary: Synthèse pour la Direction (admin) — US-50
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { _days: { type: integer, default: 30 } } }
+      responses:
+        "200":
+          {
+            description: Chiffres clés,
+            content: { application/json: { schema: { type: object } } },
+          }
+  /rpc/anonymized_stats:
+    post:
+      operationId: anonymizedStats
+      tags: [Administration]
+      summary: Statistiques anonymisées (k-anonymat k = 5) — US-46
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [_from, _to]
+              properties:
+                _from: { type: string, format: date }
+                _to: { type: string, format: date }
+      responses:
+        "200":
+          {
+            description: Agrégats sans donnée identifiante,
+            content: { application/json: { schema: { type: object } } },
+          }
+  /audit_logs:
+    get:
+      operationId: getAuditLogs
+      tags: [Administration]
+      summary: Journal d'audit (admin + MFA, lecture seule) — US-35
+      parameters:
+        - { name: action, in: query, schema: { type: string }, example: "like.auth.*" }
+        - { name: severity, in: query, schema: { type: string }, example: eq.warning }
+        - { name: order, in: query, schema: { type: string }, example: created_at.desc }
+      responses:
+        "200":
+          description: Entrées du journal
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AuditLog" } }
+  /rpc/export_my_data:
+    post:
+      operationId: exportMyData
+      tags: [Données personnelles]
+      summary: Exporter toutes mes données (patient) — US-16
+      responses:
+        "200":
+          {
+            description: "Document JSON complet (profil, rendez-vous, documents, résultats validés)",
+            content: { application/json: { schema: { type: object } } },
+          }
+  /rpc/delete_my_account:
+    post:
+      operationId: deleteMyAccount
+      tags: [Données personnelles]
+      summary: Supprimer mon compte (patient) — US-16
+      description: |
+        Annule les rendez-vous à venir, supprime les documents déposés par le patient, anonymise le profil
+        et désactive le compte. Les comptes rendus et résultats médicaux sont conservés (obligation légale
+        de conservation du dossier médical) mais ne sont plus rattachés à une identité.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [_confirm]
+              properties: { _confirm: { type: string, enum: [SUPPRIMER] } }
+      responses:
+        "204": { description: Compte supprimé }
+        "400": { $ref: "#/components/responses/BusinessError" }
+components:
+  securitySchemes:
+    userJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Jeton de session Supabase de l'utilisateur connecté (claim `aal` = aal2 après MFA).
+    apiKey:
+      type: apiKey
+      in: header
+      name: apikey
+      description: Clé publique (publishable) Supabase. Ne donne aucun droit sans jeton utilisateur.
+    cronSecret:
+      type: http
+      scheme: bearer
+      description: CRON_SECRET, stocké dans Vault et dans les variables du serveur.
+  responses:
+    BusinessError:
+      description: Règle métier refusée
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string, example: P0001 }
+        message:
+          type: string
+          enum:
+            - FORBIDDEN
+            - SLOT_TAKEN
+            - SLOT_TOO_SOON
+            - SLOT_NOT_FOUND
+            - TOO_MANY_APPOINTMENTS
+            - PATIENT_BUSY
+            - PRACTITIONER_ABSENT
+            - PORTAL_CLOSED
+            - INVALID_PERIOD
+            - INVALID_REASON
+            - CONFIRMATION_REQUIRED
+    Readiness:
+      type: object
+      properties:
+        status: { type: string, enum: [ok, unavailable] }
+        database: { type: string, enum: [ok, unavailable] }
+    Slot:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        practitioner_id: { type: string, format: uuid }
+        clinic_id: { type: string, format: uuid }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        is_booked: { type: boolean }
+    Appointment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        patient_id: { type: string, format: uuid }
+        practitioner_id: { type: string, format: uuid }
+        clinic_id: { type: string, format: uuid }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: string, format: date-time }
+        status: { type: string, enum: [scheduled, confirmed, cancelled, completed, no_show] }
+        reason: { type: string, nullable: true }
+    AuditLog:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+        user_email: { type: string, nullable: true }
+        action: { type: string, example: auth.login_success }
+        entity: { type: string, nullable: true }
+        entity_id: { type: string, nullable: true }
+        severity: { type: string, enum: [info, warning, critical] }
+        ip_address: { type: string, nullable: true }
+        details: { type: object, nullable: true }
+security:
+  - apiKey: []
+    userJwt: []

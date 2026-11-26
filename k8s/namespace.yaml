@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: medlink
+  labels:
+    # Pod Security Standards: refuse privileged containers in this namespace.
+    pod-security.kubernetes.io/enforce: restricted

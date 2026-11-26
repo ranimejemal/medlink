@@ -68,3 +68,19 @@ Outil : Google Lighthouse (Desktop)
 
 Résultat : bonnes performances sur le tableau de bord Patient
 lors de cette mesure locale.
+
+## Mesure sur le site déployé (Release 3) — à faire
+
+Le critère du cahier des charges est **< 2 s** sur le site en ligne, pas en local.
+
+1. Ouvrir Chrome en navigation privée (aucune extension), aller sur `https://medlink-fri3.vercel.app/login`.
+2. F12 → **Lighthouse** → Mode _Navigation_, Appareil _Mobile_ puis _Desktop_ → **Analyze page load**.
+3. Répéter 3 fois et garder la médiane. Faire de même pour `/patient/dashboard` (connecté).
+4. Remplir le tableau et enregistrer le rapport (⋮ → _Save as HTML_) dans `docs/recette/`.
+
+| Page                 | Appareil | Performance | FCP | LCP | TBT | CLS | < 2 s ? |
+| -------------------- | -------- | ----------: | --: | --: | --: | --: | :-----: |
+| `/login`             | Mobile   |             |     |     |     |     |         |
+| `/login`             | Desktop  |             |     |     |     |     |         |
+| `/patient/dashboard` | Mobile   |             |     |     |     |     |         |
+| `/patient/dashboard` | Desktop  |             |     |     |     |     |         |

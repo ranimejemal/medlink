@@ -1,4 +1,5 @@
 import { MaintenanceBanner } from "./MaintenanceBanner";
+import { PortalHoursBanner } from "./PortalHours";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
@@ -9,6 +10,7 @@ import {
   CalendarPlus,
   FlaskConical,
   FileText,
+  FileDown,
   User,
   ShieldCheck,
   ShieldAlert,
@@ -40,6 +42,7 @@ const NAV: Record<AppRole, NavItem[]> = {
     { to: "/patient/results", label: "Mes résultats", icon: FlaskConical },
     { to: "/patient/documents", label: "Mes documents", icon: FileText },
     { to: "/patient/profile", label: "Mon profil", icon: User },
+    { to: "/patient/privacy", label: "Mes données", icon: FileDown },
     { to: "/patient/security", label: "Sécurité", icon: ShieldCheck },
   ],
   practitioner: [
@@ -214,6 +217,7 @@ export function AppShell({ role, children }: { role: AppRole; children: ReactNod
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-8">
           <MaintenanceBanner />
+          <PortalHoursBanner />
           {children}
         </main>
       </div>
