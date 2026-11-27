@@ -12,6 +12,10 @@ export PGHOST="${PGHOST:-medlink-db-rw}" PGPORT="${PGPORT:-5432}" PGDATABASE=pos
 SU="postgres://postgres:${SUPERUSER_PASSWORD}@${PGHOST}:${PGPORT}/postgres?sslmode=require"
 ADMIN="postgres://supabase_admin:${SUPABASE_ADMIN_PASSWORD}@${PGHOST}:${PGPORT}/postgres?sslmode=require"
 INIT=/docker-entrypoint-initdb.d
+# MedLink files: in the medlink-db-init image (defaults), or mounted from ConfigMaps by
+# k8s/database/init-job.yaml (the Job then runs the plain supabase/postgres image).
+MIGRATIONS_DIR="${MIGRATIONS_DIR:-/medlink/migrations}"
+SEED_FILE="${SEED_FILE:-/medlink/seed.sql}"
 run() { psql -v ON_ERROR_STOP=1 --no-psqlrc -q "$@"; }
 log() { echo "[db-init] $*"; }
 
@@ -65,7 +69,7 @@ done
 run "$ADMIN" -c "create schema if not exists supabase_migrations;
   create table if not exists supabase_migrations.schema_migrations
     (version text primary key, name text, statements text[])"
-for f in /medlink/migrations/*.sql; do
+for f in "$MIGRATIONS_DIR"/*.sql; do
   name=$(basename "$f" .sql); version=${name%%_*}
   if [ "$(run "$ADMIN" -tAc "select count(*) from supabase_migrations.schema_migrations where version = '$version'")" = "0" ]; then
     log "migration $name"
@@ -77,8 +81,15 @@ for f in /medlink/migrations/*.sql; do
 done
 
 # ---------- 5. Demo data ----------
+# Not after an import of the real data (scripts/k8s-import-cloud.ps1 sets this marker).
+if [ "$(run "$ADMIN" -tAc "select count(*) from information_schema.tables
+    where table_schema = 'supabase_migrations' and table_name = 'medlink_real_data'")" = "1" ]; then
+  log "real data imported from Supabase cloud: no demo data, no demo accounts"
+  log "done"
+  exit 0
+fi
 log "demo data (seed.sql)"
-{ echo "set role postgres;"; cat /medlink/seed.sql; } | run "$ADMIN" -1
+{ echo "set role postgres;"; cat "$SEED_FILE"; } | run "$ADMIN" -1
 
 if [ -n "${DEMO_PASSWORD:-}" ]; then
   log "waiting for the auth API"

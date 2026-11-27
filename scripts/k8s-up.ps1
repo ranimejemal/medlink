@@ -82,14 +82,24 @@ Run kubectl -n kube-system patch deployment coredns --patch-file k8s/kind/system
 Run kubectl -n cnpg-system rollout status deployment/cnpg-controller-manager --timeout=180s
 Run kubectl -n kube-system rollout status deployment/coredns --timeout=180s
 
-Step (T "3/7 Construction des 3 images MedLink (frontend, backend, db-init)" "3/7 Building the 3 MedLink images (frontend, backend, db-init)")
-Run docker build -f docker/frontend/Dockerfile -t ghcr.io/ranimejemal/medlink-frontend:latest .
-Run docker build -f docker/backend/Dockerfile -t ghcr.io/ranimejemal/medlink-backend:latest .
-Run docker build -f docker/db-init/Dockerfile -t ghcr.io/ranimejemal/medlink-db-init:latest .
+# --provenance=false / --sbom=false: no attestation manifest, which "kind load" cannot import.
+Step (T "3/7 Construction des images MedLink (frontend, backend)" "3/7 Building the MedLink images (frontend, backend)")
+Run docker build --provenance=false --sbom=false -f docker/frontend/Dockerfile -t ghcr.io/ranimejemal/medlink-frontend:latest .
+Run docker build --provenance=false --sbom=false -f docker/backend/Dockerfile -t ghcr.io/ranimejemal/medlink-backend:latest .
+# The database Jobs use the official supabase/postgres image + ConfigMaps (step 5): no db-init
+# image to load (kind cannot import images based on supabase/postgres on some Docker Desktops).
 
+$Arch = docker version --format "{{.Server.Arch}}"
 Step (T "4/7 Chargement des images dans les serveurs du cluster" "4/7 Loading the images into the cluster's servers")
-foreach ($img in "medlink-frontend", "medlink-backend", "medlink-db-init") {
-  Run kind load docker-image "ghcr.io/ranimejemal/${img}:latest" --name $Cluster
+foreach ($img in "medlink-frontend", "medlink-backend") {
+  # Docker Desktop exports multi-platform images (e.g. supabase/postgres) with references to
+  # layers it does not have, and kind then fails with "ctr: unrecognized image format".
+  # Export only this PC's platform to an archive, then load the archive.
+  $tar = Join-Path $env:TEMP "medlink-$img.tar"
+  docker save --platform "linux/$Arch" -o $tar "ghcr.io/ranimejemal/${img}:latest"
+  if ($LASTEXITCODE -ne 0) { Run docker save -o $tar "ghcr.io/ranimejemal/${img}:latest" }
+  Run kind load image-archive $tar --name $Cluster
+  Remove-Item $tar -Force -ErrorAction SilentlyContinue
 }
 
 Step (T "5/7 Secrets (générés sur ce PC, jamais dans Git)" "5/7 Secrets (generated on this PC, never in Git)")
@@ -102,8 +112,16 @@ if (-not (Test-Path k8s/secrets.local.yaml)) {
   Write-Host (T "k8s/secrets.local.yaml créé (gardez-le : il contient les clés de ce cluster)." "Created k8s/secrets.local.yaml (keep it: it holds this cluster's keys).")
 }
 Run kubectl apply -f k8s/secrets.local.yaml
+# Database scripts and migrations for the init / import Jobs (kubectl reads the files itself:
+# no PowerShell pipe, which would damage the accents).
+foreach ($cm in "medlink-db-scripts", "medlink-migrations") { kubectl -n medlink delete configmap $cm --ignore-not-found | Out-Null }
+Run kubectl -n medlink create configmap medlink-db-scripts --from-file=init.sh=docker/db-init/init.sh --from-file=import-cloud.sh=docker/db-init/import-cloud.sh --from-file=seed.sql=supabase/seed.sql
+Run kubectl -n medlink create configmap medlink-migrations --from-file=supabase/migrations
 
 Step (T "6/7 Déploiement de MedLink (kubectl apply -k k8s)" "6/7 Deploying MedLink (kubectl apply -k k8s)")
+# A Job cannot be modified: delete the previous init Job, it runs again (safe: every step checks
+# what is already done, and it never re-adds demo data after an import of the real data).
+kubectl -n medlink delete job medlink-db-init --ignore-not-found | Out-Null
 Run kubectl apply -k k8s
 # Address of the site in e-mails and redirects (auth, backend): the port chosen above.
 $patchFile = Join-Path $env:TEMP "medlink-config-patch.json"

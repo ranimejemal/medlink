@@ -6,5 +6,7 @@ FROM supabase/postgres:15.8.1.085
 COPY supabase/migrations/ /medlink/migrations/
 COPY supabase/seed.sql /medlink/seed.sql
 COPY --chmod=0755 docker/db-init/init.sh /medlink/init.sh
+# Copy of the real data from Supabase cloud (k8s/database/import-job.yaml, on demand).
+COPY --chmod=0755 docker/db-init/import-cloud.sh /medlink/import-cloud.sh
 USER postgres
 ENTRYPOINT ["/medlink/init.sh"]

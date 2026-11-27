@@ -28,18 +28,18 @@ et si un serveur tombe, Kubernetes **bascule sur les autres** automatiquement.
                      └───────────────────────────────────────────────┘
 ```
 
-| Couche                    | Image                                                       | Copies        | Rôle                                                                           |
-| ------------------------- | ----------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------ |
-| **Frontend**              | `medlink-frontend` (`docker/frontend/Dockerfile`, nginx)    | 2 à 5         | Pages React (fichiers statiques), point d'entrée du site, en-têtes de sécurité |
-| **Backend**               | `medlink-backend` (`docker/backend/Dockerfile`, Node.js 22) | 2 à 5         | Fonctions serveur, `/api` (Swagger, santé, e-mails), secrets côté serveur      |
-| **Base de données**       | `supabase/postgres:15.8.1.085` + opérateur CloudNativePG    | 2             | PostgreSQL avec les extensions Supabase (Vault, pg_cron, pg_net…)              |
-| Initialisation de la base | `medlink-db-init` (`docker/db-init/Dockerfile`)             | Job           | Schéma Supabase, 18 migrations MedLink, données et comptes de démo             |
-| Authentification          | `supabase/gotrue`                                           | 2             | Inscription, code e-mail, connexion, MFA (TOTP)                                |
-| API REST                  | `postgrest/postgrest`                                       | 2             | Tables et fonctions, protégées par RLS                                         |
-| Passerelle API            | `nginx`                                                     | 2             | Rôle de Kong sur Supabase cloud : `/auth/v1`, `/rest/v1`, `/storage/v1`        |
-| Stockage                  | `supabase/storage-api`                                      | 1             | Documents des patients (bucket privé, 10 Mo max)                               |
-| E-mails de démo           | `axllent/mailpit`                                           | 1             | Reçoit tous les e-mails (http://127.0.0.1:8025)                                |
-| Tâche des e-mails         | `curlimages/curl` (CronJob)                                 | chaque minute | Confirmations et rappels de rendez-vous                                        |
+| Couche                    | Image                                                                                                                                      | Copies        | Rôle                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------- | ------------------------------------------------------------------------------ |
+| **Frontend**              | `medlink-frontend` (`docker/frontend/Dockerfile`, nginx)                                                                                   | 2 à 5         | Pages React (fichiers statiques), point d'entrée du site, en-têtes de sécurité |
+| **Backend**               | `medlink-backend` (`docker/backend/Dockerfile`, Node.js 22)                                                                                | 2 à 5         | Fonctions serveur, `/api` (Swagger, santé, e-mails), secrets côté serveur      |
+| **Base de données**       | `supabase/postgres:15.8.1.085` + opérateur CloudNativePG                                                                                   | 2             | PostgreSQL avec les extensions Supabase (Vault, pg_cron, pg_net…)              |
+| Initialisation de la base | `supabase/postgres` + ConfigMaps (scripts `docker/db-init/`, migrations) ; image `medlink-db-init` publiée par la CI pour un vrai registre | Job           | Schéma Supabase, 18 migrations MedLink, données et comptes de démo             |
+| Authentification          | `supabase/gotrue`                                                                                                                          | 2             | Inscription, code e-mail, connexion, MFA (TOTP)                                |
+| API REST                  | `postgrest/postgrest`                                                                                                                      | 2             | Tables et fonctions, protégées par RLS                                         |
+| Passerelle API            | `nginx`                                                                                                                                    | 2             | Rôle de Kong sur Supabase cloud : `/auth/v1`, `/rest/v1`, `/storage/v1`        |
+| Stockage                  | `supabase/storage-api`                                                                                                                     | 1             | Documents des patients (bucket privé, 10 Mo max)                               |
+| E-mails de démo           | `axllent/mailpit`                                                                                                                          | 1             | Reçoit tous les e-mails (http://127.0.0.1:8025)                                |
+| Tâche des e-mails         | `curlimages/curl` (CronJob)                                                                                                                | chaque minute | Confirmations et rappels de rendez-vous                                        |
 
 Toute la configuration est dans `k8s/` (`kubectl apply -k k8s`). Les secrets (clés JWT, mots de passe
 de la base, clé racine de Vault) sont **générés sur le PC** par `scripts/k8s-secrets.mjs`, jamais
@@ -135,6 +135,40 @@ Comptes de démo (mot de passe `MedLink-Demo-2026!`) : `patient.demo@medlink.tes
 `doctor.demo@medlink.test`, `admin.demo@medlink.test`, `staff.demo@medlink.test`. Le praticien et
 l'administrateur doivent configurer le MFA à la première connexion (application d'authentification).
 
+### Utiliser les vrais comptes (données de Supabase cloud)
+
+Par défaut, le cluster contient des **données de démo** (comptes `@medlink.test`). Pour y copier
+les **vraies données** de Supabase cloud :
+
+```powershell
+.\scripts\k8s-import-cloud.ps1
+```
+
+Le script demande l'adresse de la base Supabase cloud (Supabase → **Connect** → **Session pooler**,
+avec le mot de passe de la base) et, en option, la clé secrète `sb_secret_...` pour copier aussi les
+fichiers des patients. Ces valeurs ne sont écrites nulle part : elles passent par un Secret
+Kubernetes temporaire, supprimé à la fin. Le Job `medlink-import-cloud`
+(`docker/db-init/import-cloud.sh`) copie :
+
+| Copié                                         | Remarque                                                                       |
+| --------------------------------------------- | ------------------------------------------------------------------------------ |
+| Comptes (`auth.users`, `auth.identities`)     | Mêmes mots de passe (empreintes bcrypt copiées telles quelles)                 |
+| Toutes les tables de l'application (`public`) | Seules les colonnes présentes des deux côtés sont copiées                      |
+| Clé `medical_data_key` (Vault)                | Indispensable : sans elle, les données médicales chiffrées seraient illisibles |
+| Fichiers du bucket `patient-documents`        | Seulement si la clé `sb_secret_...` est donnée                                 |
+| **Non copiés** : facteurs MFA, sessions       | Praticiens et admins refont le MFA ; tout le monde se reconnecte               |
+
+Les données de démo du cluster sont **remplacées**, et le Job d'initialisation ne les remet plus
+(marqueur `supabase_migrations.medlink_real_data`). Les e-mails restent captés par Mailpit : aucun
+vrai patient ne reçoit d'e-mail du cluster. **Ce sont des données de santé réelles** : ne pas les
+filmer ni les montrer sans accord. Pour revenir aux données de démo : `.\scripts\k8s-down.ps1`
+puis `.\scripts\k8s-up.ps1`.
+
+Testé le 27/11/2026 avec une copie de base jouant le rôle de Supabase cloud (clé médicale
+différente) : connexion avec le mot de passe d'origine, données médicales déchiffrées, comptes de
+démo supprimés, Job d'initialisation relancé sans réinjecter la démo. La copie des fichiers n'a pas
+pu être testée hors de Supabase cloud.
+
 ### Démonstration de la panne d'un serveur
 
 ```powershell
@@ -163,11 +197,11 @@ Les scripts affichent leurs messages **en français** par défaut ; ajoutez `-La
 ### Après une nouvelle migration
 
 ```powershell
-docker build -f docker/db-init/Dockerfile -t ghcr.io/ranimejemal/medlink-db-init:latest .
-kind load docker-image ghcr.io/ranimejemal/medlink-db-init:latest --name medlink
-kubectl -n medlink delete job medlink-db-init
-kubectl apply -k k8s
+.\scripts\k8s-up.ps1
 ```
+
+Le script recrée les ConfigMaps `medlink-db-scripts` et `medlink-migrations` à partir des fichiers
+du projet, puis relance le Job d'initialisation.
 
 Le Job n'applique que les migrations pas encore appliquées (table `supabase_migrations.schema_migrations`).
 

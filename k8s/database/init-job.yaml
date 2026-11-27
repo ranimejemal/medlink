@@ -16,9 +16,14 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: init
-          image: ghcr.io/ranimejemal/medlink-db-init:latest
-          imagePullPolicy: IfNotPresent
+          # Official Supabase Postgres image (already used by the database: nothing to build or
+          # load into the cluster); the MedLink scripts and migrations come from ConfigMaps.
+          image: supabase/postgres:15.8.1.085
+          command: ["/bin/sh", "/medlink/bin/init.sh"]
+          securityContext: { runAsUser: 105, runAsGroup: 106, allowPrivilegeEscalation: false }
           env:
+            - { name: SEED_FILE, value: /medlink/bin/seed.sql }
+            - { name: MIGRATIONS_DIR, value: /medlink/migrations }
             - { name: PGHOST, value: medlink-db-rw }
             - { name: AUTH_URL, value: "http://auth:9999" }
             - {
@@ -54,3 +59,13 @@ spec:
           resources:
             requests: { cpu: 50m, memory: 64Mi }
             limits: { memory: 256Mi }
+          volumeMounts:
+            - { name: scripts, mountPath: /medlink/bin, readOnly: true }
+            - { name: migrations, mountPath: /medlink/migrations, readOnly: true }
+      volumes:
+        # Created by scripts/k8s-up.ps1 from docker/db-init/*.sh, supabase/seed.sql and
+        # supabase/migrations (kubectl create configmap ... --from-file).
+        - name: scripts
+          configMap: { name: medlink-db-scripts }
+        - name: migrations
+          configMap: { name: medlink-migrations }

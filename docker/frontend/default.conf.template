@@ -6,6 +6,17 @@
 # Behind an HTTPS ingress, keep the original protocol (the server-function CSRF check needs it).
 map $http_x_forwarded_proto $medlink_proto { default $http_x_forwarded_proto; "" $scheme; }
 
+# Anti brute force on the auth API itself (OWASP A07), per client IP. The app's own lockout
+# (5 failures = 15 min, login_attempts) only covers the login form, which goes through the
+# backend; these limits also stop a script calling /auth/v1 directly:
+#   - password sign-in (grant_type=password; token refreshes are not limited): 5 per minute;
+#   - e-mail codes, sign-up, password reset, MFA code checks: 10 per minute.
+# Above the limit (after a short burst): HTTP 429 Too Many Requests.
+map $arg_grant_type $medlink_pwlogin_key { password $binary_remote_addr; default ""; }
+limit_req_zone $medlink_pwlogin_key zone=pwlogin:10m rate=5r/m;
+limit_req_zone $binary_remote_addr zone=authcodes:10m rate=10r/m;
+limit_req_status 429;
+
 server {
   listen 8080;
   server_name _;
@@ -42,6 +53,14 @@ server {
   location /_serverFn/ { proxy_pass ${BACKEND_URL}; }
 
   location /auth/v1/    { proxy_pass ${GATEWAY_URL}; }
+  location = /auth/v1/token {
+    limit_req zone=pwlogin burst=3 nodelay;
+    proxy_pass ${GATEWAY_URL};
+  }
+  location ~ ^/auth/v1/(verify|otp|signup|recover|resend|factors/[^/]+/verify)$ {
+    limit_req zone=authcodes burst=5 nodelay;
+    proxy_pass ${GATEWAY_URL};
+  }
   location /rest/v1/    { proxy_pass ${GATEWAY_URL}; }
   location /storage/v1/ { proxy_pass ${GATEWAY_URL}; }
 
