@@ -1,3 +1,5 @@
+import { checkMaintenanceSecurity } from "@/lib/maintenance-security.functions";
+import { detectSqlInjection } from "@/lib/sql-injection-detector";
 import { isValidMaintenancePeriod } from "@/lib/maintenance-validation";
 import { supabase } from "@/integrations/supabase/client";
 import { createFileRoute } from "@tanstack/react-router";
@@ -49,7 +51,7 @@ function MaintenancePage() {
     };
   }
 
-  function handlePreview(event: FormEvent<HTMLFormElement>) {
+  async function handlePreview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const announcement = validateAnnouncement();
@@ -59,13 +61,51 @@ function MaintenancePage() {
       return;
     }
 
-    setDraft(announcement);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      if (!sessionData.session) {
+        setError("Session expirée.");
+        return;
+      }
+
+      const result = await checkMaintenanceSecurity({
+        data: {
+          title: announcement.title,
+          message: announcement.message,
+        },
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      });
+
+      if (result.suspicious) {
+        setDraft(null);
+        setError(
+            result.threatType === "xss"
+              ? "Tentative XSS détectée côté serveur."
+              : "Saisie SQL suspecte détectée côté serveur."
+          );
+        return;
+      }
+
+      setDraft(announcement);
+    } catch (err) {
+      console.error(err);
+      setDraft(null);
+      setError("Vérification de sécurité indisponible.");
+    }
   }
 
   async function handlePublish() {
     const announcement = validateAnnouncement();
 
     if (!announcement || isPublishing) {
+      return;
+    }
+
+    if (detectSqlInjection(announcement.title + " " + announcement.message)) {
+      setError("Saisie SQL suspecte détectée — publication refusée.");
       return;
     }
 

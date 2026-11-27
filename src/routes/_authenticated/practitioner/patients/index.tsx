@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { EmptyState, ListSkeleton, PageHeader, Panel } from "@/components/medlink/ui";
 import { fileNumber } from "@/lib/format";
+import { detectSqlInjection } from "@/lib/sql-injection-detector";
+import { checkPatientSearchSecurity } from "@/lib/patient-search-security.functions";
 
 export const Route = createFileRoute("/_authenticated/practitioner/patients/")({
   head: () => ({
@@ -31,6 +33,40 @@ const norm = (s: string) =>
 // only returns those profiles, so another practitioner's patients never appear.
 function PatientsPage() {
   const [q, setQ] = useState("");
+  const [securityError, setSecurityError] = useState("");
+
+  useEffect(() => {
+    if (!detectSqlInjection(q)) {
+      setSecurityError("");
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          setSecurityError("Session expirée.");
+          return;
+        }
+
+        const result = await checkPatientSearchSecurity({
+          data: { search: q },
+          headers: {
+            Authorization: `Bearer ${data.session.access_token}`,
+          },
+        });
+
+        if (result.suspicious) {
+          setSecurityError("Saisie SQL suspecte détectée côté serveur.");
+        }
+      } catch {
+        setSecurityError("Vérification de sécurité indisponible.");
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [q]);
+
   const list = useQuery({
     queryKey: ["practitioner", "patients"],
     queryFn: async () => {
@@ -101,6 +137,11 @@ function PatientsPage() {
           className="pl-9"
           aria-label="Rechercher un patient"
         />
+        {securityError && (
+          <p role="alert" className="mt-2 text-sm text-destructive">
+            {securityError}
+          </p>
+        )}
       </div>
       <Panel>
         {list.isLoading ? (
