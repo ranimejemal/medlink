@@ -37,25 +37,13 @@ dist-ssr
 !.env.example
 
 supabase/.temp/
-<<<<<<< HEAD
-.env
-.env.local
-medlink-mobile/.env
-dist/
-node_modules/
-.expo/
-
-.env
-.env.local
-**/.env
-**/.env.local
-**/node_modules/
-**/dist/
-**/.expo/
-=======
 
 # Vercel build output / project link
 .vercel
->>>>>>> e79e2b9 (Deploy on Vercel: Vercel build output, security headers, e-mail job from Supabase)
-.env
-.env
+
+# Mobile app (Expo)
+medlink-mobile/.env
+**/.expo/
+
+# US-37: database backups contain personal data, never commit them
+backups/

@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Wrench } from "lucide-react";
 import { PageHeader, Panel } from "@/components/medlink/ui";
+import { PortalHoursSettings } from "@/components/medlink/PortalHours";
 
 export const Route = createFileRoute("/_authenticated/admin/maintenance")({
   component: MaintenancePage,
@@ -123,6 +124,8 @@ function MaintenancePage() {
         title="Maintenance annoncée"
         description="Planifier et gérer les annonces de maintenance."
       />
+
+      <PortalHoursSettings />
 
       <Panel title="Nouvelle annonce de maintenance">
         <form onSubmit={handlePreview} className="space-y-4">

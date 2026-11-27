@@ -23,6 +23,9 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPatientRouteRouteImport } from './routes/_authenticated/patient/route'
 import { Route as AuthenticatedPractitionerRouteRouteImport } from './routes/_authenticated/practitioner/route'
 import { Route as AuthenticatedStaffRouteRouteImport } from './routes/_authenticated/staff/route'
+import { Route as ApiDocsRouteImport } from './routes/api/docs'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiReadyRouteImport } from './routes/api/ready'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin/dashboard'
 import { Route as AuthenticatedAdminMaintenanceRouteImport } from './routes/_authenticated/admin/maintenance'
@@ -33,6 +36,7 @@ import { Route as AuthenticatedAdminSupervisionRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedPatientDashboardRouteImport } from './routes/_authenticated/patient/dashboard'
 import { Route as AuthenticatedPatientDocumentsRouteImport } from './routes/_authenticated/patient/documents'
+import { Route as AuthenticatedPatientPrivacyRouteImport } from './routes/_authenticated/patient/privacy'
 import { Route as AuthenticatedPatientProfileRouteImport } from './routes/_authenticated/patient/profile'
 import { Route as AuthenticatedPatientRequestRouteImport } from './routes/_authenticated/patient/request'
 import { Route as AuthenticatedPatientResultsRouteImport } from './routes/_authenticated/patient/results'
@@ -48,6 +52,7 @@ import { Route as AuthenticatedStaffSecurityRouteImport } from './routes/_authen
 import { Route as AuthenticatedStaffSupervisionRouteImport } from './routes/_authenticated/staff/supervision'
 import { Route as AuthenticatedStaffUsersRouteImport } from './routes/_authenticated/staff/users'
 import { Route as ApiCronAppointmentEmailsRouteImport } from './routes/api/cron/appointment-emails'
+import { Route as ApiDocsAssetsFileRouteImport } from './routes/api/docs-assets.$file'
 import { Route as AuthenticatedPatientAppointmentsIndexRouteImport } from './routes/_authenticated/patient/appointments/index'
 import { Route as AuthenticatedPatientAppointmentsNewRouteImport } from './routes/_authenticated/patient/appointments/new'
 import { Route as AuthenticatedPractitionerPatientsIndexRouteImport } from './routes/_authenticated/practitioner/patients/index'
@@ -124,6 +129,21 @@ const AuthenticatedStaffRouteRoute = AuthenticatedStaffRouteRouteImport.update({
   path: '/staff',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiDocsRoute = ApiDocsRouteImport.update({
+  id: '/api/docs',
+  path: '/api/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReadyRoute = ApiReadyRouteImport.update({
+  id: '/api/ready',
+  path: '/api/ready',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -180,6 +200,12 @@ const AuthenticatedPatientDocumentsRoute =
   AuthenticatedPatientDocumentsRouteImport.update({
     id: '/documents',
     path: '/documents',
+    getParentRoute: () => AuthenticatedPatientRouteRoute,
+  } as any)
+const AuthenticatedPatientPrivacyRoute =
+  AuthenticatedPatientPrivacyRouteImport.update({
+    id: '/privacy',
+    path: '/privacy',
     getParentRoute: () => AuthenticatedPatientRouteRoute,
   } as any)
 const AuthenticatedPatientProfileRoute =
@@ -270,6 +296,11 @@ const ApiCronAppointmentEmailsRoute =
     path: '/api/cron/appointment-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiDocsAssetsFileRoute = ApiDocsAssetsFileRouteImport.update({
+  id: '/api/docs-assets/$file',
+  path: '/api/docs-assets/$file',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPatientAppointmentsIndexRoute =
   AuthenticatedPatientAppointmentsIndexRouteImport.update({
     id: '/appointments/',
@@ -309,6 +340,9 @@ export interface FileRoutesByFullPath {
   '/practitioner': typeof AuthenticatedPractitionerRouteRouteWithChildren
   '/staff': typeof AuthenticatedStaffRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/docs': typeof ApiDocsRoute
+  '/api/health': typeof ApiHealthRoute
+  '/api/ready': typeof ApiReadyRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
@@ -319,6 +353,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/patient/documents': typeof AuthenticatedPatientDocumentsRoute
+  '/patient/privacy': typeof AuthenticatedPatientPrivacyRoute
   '/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/patient/request': typeof AuthenticatedPatientRequestRoute
   '/patient/results': typeof AuthenticatedPatientResultsRoute
@@ -334,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/staff/supervision': typeof AuthenticatedStaffSupervisionRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
   '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
+  '/api/docs-assets/$file': typeof ApiDocsAssetsFileRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
   '/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/patient/appointments/': typeof AuthenticatedPatientAppointmentsIndexRoute
@@ -353,6 +389,9 @@ export interface FileRoutesByTo {
   '/practitioner': typeof AuthenticatedPractitionerRouteRouteWithChildren
   '/staff': typeof AuthenticatedStaffRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/docs': typeof ApiDocsRoute
+  '/api/health': typeof ApiHealthRoute
+  '/api/ready': typeof ApiReadyRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
@@ -363,6 +402,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/patient/documents': typeof AuthenticatedPatientDocumentsRoute
+  '/patient/privacy': typeof AuthenticatedPatientPrivacyRoute
   '/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/patient/request': typeof AuthenticatedPatientRequestRoute
   '/patient/results': typeof AuthenticatedPatientResultsRoute
@@ -378,6 +418,7 @@ export interface FileRoutesByTo {
   '/staff/supervision': typeof AuthenticatedStaffSupervisionRoute
   '/staff/users': typeof AuthenticatedStaffUsersRoute
   '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
+  '/api/docs-assets/$file': typeof ApiDocsAssetsFileRoute
   '/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
   '/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/patient/appointments': typeof AuthenticatedPatientAppointmentsIndexRoute
@@ -399,6 +440,9 @@ export interface FileRoutesById {
   '/_authenticated/practitioner': typeof AuthenticatedPractitionerRouteRouteWithChildren
   '/_authenticated/staff': typeof AuthenticatedStaffRouteRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/docs': typeof ApiDocsRoute
+  '/api/health': typeof ApiHealthRoute
+  '/api/ready': typeof ApiReadyRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/_authenticated/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
@@ -409,6 +453,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/patient/dashboard': typeof AuthenticatedPatientDashboardRoute
   '/_authenticated/patient/documents': typeof AuthenticatedPatientDocumentsRoute
+  '/_authenticated/patient/privacy': typeof AuthenticatedPatientPrivacyRoute
   '/_authenticated/patient/profile': typeof AuthenticatedPatientProfileRoute
   '/_authenticated/patient/request': typeof AuthenticatedPatientRequestRoute
   '/_authenticated/patient/results': typeof AuthenticatedPatientResultsRoute
@@ -424,6 +469,7 @@ export interface FileRoutesById {
   '/_authenticated/staff/supervision': typeof AuthenticatedStaffSupervisionRoute
   '/_authenticated/staff/users': typeof AuthenticatedStaffUsersRoute
   '/api/cron/appointment-emails': typeof ApiCronAppointmentEmailsRoute
+  '/api/docs-assets/$file': typeof ApiDocsAssetsFileRoute
   '/_authenticated/patient/appointments/new': typeof AuthenticatedPatientAppointmentsNewRoute
   '/_authenticated/practitioner/patients/$patientId': typeof AuthenticatedPractitionerPatientsPatientIdRoute
   '/_authenticated/patient/appointments/': typeof AuthenticatedPatientAppointmentsIndexRoute
@@ -445,6 +491,9 @@ export interface FileRouteTypes {
     | '/practitioner'
     | '/staff'
     | '/dashboard'
+    | '/api/docs'
+    | '/api/health'
+    | '/api/ready'
     | '/admin/audit'
     | '/admin/dashboard'
     | '/admin/maintenance'
@@ -455,6 +504,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/patient/dashboard'
     | '/patient/documents'
+    | '/patient/privacy'
     | '/patient/profile'
     | '/patient/request'
     | '/patient/results'
@@ -470,6 +520,7 @@ export interface FileRouteTypes {
     | '/staff/supervision'
     | '/staff/users'
     | '/api/cron/appointment-emails'
+    | '/api/docs-assets/$file'
     | '/patient/appointments/new'
     | '/practitioner/patients/$patientId'
     | '/patient/appointments/'
@@ -489,6 +540,9 @@ export interface FileRouteTypes {
     | '/practitioner'
     | '/staff'
     | '/dashboard'
+    | '/api/docs'
+    | '/api/health'
+    | '/api/ready'
     | '/admin/audit'
     | '/admin/dashboard'
     | '/admin/maintenance'
@@ -499,6 +553,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/patient/dashboard'
     | '/patient/documents'
+    | '/patient/privacy'
     | '/patient/profile'
     | '/patient/request'
     | '/patient/results'
@@ -514,6 +569,7 @@ export interface FileRouteTypes {
     | '/staff/supervision'
     | '/staff/users'
     | '/api/cron/appointment-emails'
+    | '/api/docs-assets/$file'
     | '/patient/appointments/new'
     | '/practitioner/patients/$patientId'
     | '/patient/appointments'
@@ -534,6 +590,9 @@ export interface FileRouteTypes {
     | '/_authenticated/practitioner'
     | '/_authenticated/staff'
     | '/_authenticated/dashboard'
+    | '/api/docs'
+    | '/api/health'
+    | '/api/ready'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/dashboard'
     | '/_authenticated/admin/maintenance'
@@ -544,6 +603,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/patient/dashboard'
     | '/_authenticated/patient/documents'
+    | '/_authenticated/patient/privacy'
     | '/_authenticated/patient/profile'
     | '/_authenticated/patient/request'
     | '/_authenticated/patient/results'
@@ -559,6 +619,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/supervision'
     | '/_authenticated/staff/users'
     | '/api/cron/appointment-emails'
+    | '/api/docs-assets/$file'
     | '/_authenticated/patient/appointments/new'
     | '/_authenticated/practitioner/patients/$patientId'
     | '/_authenticated/patient/appointments/'
@@ -575,7 +636,11 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SessionExpiredRoute: typeof SessionExpiredRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
+  ApiDocsRoute: typeof ApiDocsRoute
+  ApiHealthRoute: typeof ApiHealthRoute
+  ApiReadyRoute: typeof ApiReadyRoute
   ApiCronAppointmentEmailsRoute: typeof ApiCronAppointmentEmailsRoute
+  ApiDocsAssetsFileRoute: typeof ApiDocsAssetsFileRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -678,6 +743,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/docs': {
+      id: '/api/docs'
+      path: '/api/docs'
+      fullPath: '/api/docs'
+      preLoaderRoute: typeof ApiDocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ready': {
+      id: '/api/ready'
+      path: '/api/ready'
+      fullPath: '/api/ready'
+      preLoaderRoute: typeof ApiReadyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/audit': {
       id: '/_authenticated/admin/audit'
       path: '/audit'
@@ -746,6 +832,13 @@ declare module '@tanstack/react-router' {
       path: '/documents'
       fullPath: '/patient/documents'
       preLoaderRoute: typeof AuthenticatedPatientDocumentsRouteImport
+      parentRoute: typeof AuthenticatedPatientRouteRoute
+    }
+    '/_authenticated/patient/privacy': {
+      id: '/_authenticated/patient/privacy'
+      path: '/privacy'
+      fullPath: '/patient/privacy'
+      preLoaderRoute: typeof AuthenticatedPatientPrivacyRouteImport
       parentRoute: typeof AuthenticatedPatientRouteRoute
     }
     '/_authenticated/patient/profile': {
@@ -853,6 +946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronAppointmentEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/docs-assets/$file': {
+      id: '/api/docs-assets/$file'
+      path: '/api/docs-assets/$file'
+      fullPath: '/api/docs-assets/$file'
+      preLoaderRoute: typeof ApiDocsAssetsFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/patient/appointments/': {
       id: '/_authenticated/patient/appointments/'
       path: '/appointments'
@@ -916,6 +1016,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
 interface AuthenticatedPatientRouteRouteChildren {
   AuthenticatedPatientDashboardRoute: typeof AuthenticatedPatientDashboardRoute
   AuthenticatedPatientDocumentsRoute: typeof AuthenticatedPatientDocumentsRoute
+  AuthenticatedPatientPrivacyRoute: typeof AuthenticatedPatientPrivacyRoute
   AuthenticatedPatientProfileRoute: typeof AuthenticatedPatientProfileRoute
   AuthenticatedPatientRequestRoute: typeof AuthenticatedPatientRequestRoute
   AuthenticatedPatientResultsRoute: typeof AuthenticatedPatientResultsRoute
@@ -928,6 +1029,7 @@ const AuthenticatedPatientRouteRouteChildren: AuthenticatedPatientRouteRouteChil
   {
     AuthenticatedPatientDashboardRoute: AuthenticatedPatientDashboardRoute,
     AuthenticatedPatientDocumentsRoute: AuthenticatedPatientDocumentsRoute,
+    AuthenticatedPatientPrivacyRoute: AuthenticatedPatientPrivacyRoute,
     AuthenticatedPatientProfileRoute: AuthenticatedPatientProfileRoute,
     AuthenticatedPatientRequestRoute: AuthenticatedPatientRequestRoute,
     AuthenticatedPatientResultsRoute: AuthenticatedPatientResultsRoute,
@@ -1027,7 +1129,11 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SessionExpiredRoute: SessionExpiredRoute,
   UnauthorizedRoute: UnauthorizedRoute,
+  ApiDocsRoute: ApiDocsRoute,
+  ApiHealthRoute: ApiHealthRoute,
+  ApiReadyRoute: ApiReadyRoute,
   ApiCronAppointmentEmailsRoute: ApiCronAppointmentEmailsRoute,
+  ApiDocsAssetsFileRoute: ApiDocsAssetsFileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

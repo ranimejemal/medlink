@@ -1,0 +1,3 @@
+10055	WARN	(CSP script-src not restricted: SSR inline scripts, see docs/securite-zap.md)
+10049	IGNORE	(Non-storable content: informational)
+10027	IGNORE	(Suspicious comments in minified bundles: false positives)

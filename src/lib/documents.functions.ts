@@ -22,13 +22,12 @@ export const downloadDocument = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
     const ip = getRequest()?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "";
-    const audit = (action: string, severity: "info" | "warning") =>
-      sb.rpc("write_audit", {
+    // log_event() only accepts known actions and sets the severity itself (OWASP A09).
+    const audit = (action: "document.downloaded" | "document.denied") =>
+      sb.rpc("log_event", {
         _action: action,
         _entity: data.kind === "report" ? "consultation_report" : "medical_result",
         _entity_id: data.id,
-        _details: null as never,
-        _severity: severity,
         _ip: ip,
       });
 
@@ -88,7 +87,7 @@ export const downloadDocument = createServerFn({ method: "POST" })
     }
 
     if (!doc) {
-      await audit("document.denied", "warning");
+      await audit("document.denied");
       throw new Error("NOT_FOUND");
     }
 
@@ -109,7 +108,7 @@ export const downloadDocument = createServerFn({ method: "POST" })
       patient: p ? `${p.last_name.toUpperCase()} ${p.first_name}` : "",
       generatedAt: new Date(),
     });
-    await audit("document.downloaded", "info");
+    await audit("document.downloaded");
 
     const prefix = data.kind === "report" ? "compte-rendu" : "resultat";
     return {

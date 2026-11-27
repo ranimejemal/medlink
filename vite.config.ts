@@ -12,6 +12,11 @@ const SECURITY_HEADERS = {
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  // US-61 (ZAP finding "CSP header not set"): forbids framing, plugins, <base> hijacking and
+  // form posts to other sites. script-src is not restricted yet: the SSR pages use inline scripts.
+  "Content-Security-Policy":
+    "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+  "Cross-Origin-Opener-Policy": "same-origin",
 };
 
 export default defineConfig(({ command, mode }) => {
@@ -51,7 +56,11 @@ export default defineConfig(({ command, mode }) => {
               preset:
                 process.env["NITRO_PRESET"] ?? (process.env["VERCEL"] ? "vercel" : "node-server"),
               // US-44 security headers, also sent where Caddy is not in front (e.g. Vercel).
-              routeRules: { "/**": { headers: SECURITY_HEADERS } },
+              routeRules: {
+                "/**": { headers: SECURITY_HEADERS },
+                // US-61 (ZAP 10021): Vercel stops at the /assets route, so repeat the headers there.
+                "/assets/**": { headers: SECURITY_HEADERS },
+              },
             }),
           ]
         : []),

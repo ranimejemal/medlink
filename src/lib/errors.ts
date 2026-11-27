@@ -27,6 +27,13 @@ const MESSAGES: Record<string, string> = {
   INVALID_PERIOD:
     "Période invalide : la fin doit être après le début, dans le futur, et la durée au plus 120 jours.",
   INVALID_EMAIL: "Adresse e-mail invalide.",
+  // US-49
+  PORTAL_CLOSED:
+    "La prise de rendez-vous en ligne est ouverte de 6 h à 22 h (heure de Tunis). Réessayez pendant ces horaires ou appelez la clinique.",
+  // US-16
+  CONFIRMATION_REQUIRED: "Tapez SUPPRIMER pour confirmer la suppression du compte.",
+  DELETE_FAILED:
+    "La suppression n'a pas pu être terminée. Contactez l'administration de la clinique.",
   SELF_DELETION: "Vous ne pouvez pas supprimer votre propre compte.",
   LAST_ADMIN: "Impossible de supprimer le dernier administrateur.",
   HAS_CLINICAL_DATA:

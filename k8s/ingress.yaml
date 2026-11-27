@@ -1,0 +1,24 @@
+# HTTPS entry point (US-44). Needs an ingress controller (ingress-nginx) and cert-manager
+# with a ClusterIssuer named "letsencrypt". Replace the host with your domain.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: medlink
+  namespace: medlink
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "12m" # documents up to 10 MB
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [medlink.example.tn]
+      secretName: medlink-tls
+  rules:
+    - host: medlink.example.tn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: medlink, port: { name: http } }

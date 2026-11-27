@@ -21,7 +21,7 @@ espace patient, espace praticien, back-office administratif et journal d'audit.
 9. [Problèmes fréquents](#9-problèmes-fréquents)
 10. [Sécurité : règles de l'équipe](#10-sécurité--règles-de-léquipe)
 11. [Travailler en équipe avec Git](#11-travailler-en-équipe-avec-git)
-12. [Déploiement sur le VPS](#12-déploiement-sur-le-vps)
+12. [Déploiement](#12-déploiement)
 13. [État d'avancement](#13-état-davancement)
 14. [Documentation des fonctionnalités](#documentation-des-fonctionnalités)
 
@@ -255,64 +255,48 @@ Ce projet manipule des données de santé. Respectez toujours ces règles :
 - Ouvrez une _pull request_ ; un autre membre relit avant la fusion.
 - Après un `git pull`, relancez `npm install --legacy-peer-deps` si `package.json` a changé.
 
-## 12. Déploiement sur le VPS
+## 12. Déploiement
 
-```powershell
-npm run build
-node .output/server/index.mjs
-```
+Trois façons de faire tourner la **même** application (détails : [docs/deploiement.md](docs/deploiement.md)) :
 
-À prévoir :
+| Cible          | Commande                                  | Pour quoi                                 |
+| -------------- | ----------------------------------------- | ----------------------------------------- |
+| Vercel         | push sur `main` (déploiement automatique) | Démonstration en ligne                    |
+| Docker Compose | `docker compose up -d --build`            | Un serveur (VPS, PC) avec HTTPS par Caddy |
+| Kubernetes     | `kubectl apply -k k8s/`                   | Haute disponibilité (2 à 5 répliques)     |
 
-- Un **reverse proxy HTTPS** (Nginx ou Caddy) avec certificat (Let's Encrypt) devant l'application — exigence US-44.
-- Les variables d'environnement du [tableau](#4-variables-denvironnement) définies sur le serveur (jamais dans le dépôt).
-- Dans Supabase : _Site URL_ et _Redirect URLs_ avec votre vrai domaine (`https://votre-domaine.tn/**`).
-- Un gestionnaire de processus (`pm2` ou `systemd`) pour relancer l'application.
-- Supprimer les comptes de démo (voir section 10).
+- Sondes : `/api/health` (vivant) et `/api/ready` (base joignable).
+- Documentation de l'API (Swagger) : **`/api/docs`**.
+- Dans Supabase : _Site URL_ et _Redirect URLs_ avec le vrai domaine (`https://votre-domaine.tn/**`).
+- Sauvegardes : [docs/sauvegarde-restauration.md](docs/sauvegarde-restauration.md).
 
 ## 13. État d'avancement
 
-Suivi détaillé : fichier _MedLink Product Backlog Roadmap_ (Release 1 = socle sécurisé).
+**Release 1 à 3 — fonctionne :** inscription avec code e-mail, connexion, MFA, anti brute-force,
+déconnexion à l'inactivité ; réservation, annulation, report (sans double réservation, même dans
+deux cliniques), rappels et confirmations par e-mail ; dossier, résultats et documents du patient
+(PDF, dépôt de fichiers, partage avec le médecin) ; agenda, absences, comptes rendus et validation
+du praticien ; prise de rendez-vous par l'accueil ; supervision des cliniques, synthèse Direction,
+statistiques anonymisées, alertes sécurité, **journal d'audit** (filtres, export) ; maintenance
+annoncée, **horaires 6 h – 22 h** ; **export et suppression des données** par le patient ;
+chiffrement AES-256 des données médicales ; sauvegardes chiffrées ; API documentée (Swagger) ;
+conteneurs et Kubernetes.
 
-**Fonctionne aujourd'hui :** inscription, connexion, réinitialisation du mot de passe, MFA
-(praticien / administrateur), contrôle d'accès par rôle, anti brute-force, journal d'audit côté base,
-déconnexion après inactivité, demande de rendez-vous assistée par IA et file de traitement pour le personnel,
-tableaux de bord de chaque rôle.
-
-**Pas encore développé (liens du menu sans page) :**
-recherche de praticien et de créneau, réservation en ligne (la fonction base de données
-`book_appointment` est prête), annulation / report, résultats et documents du patient, profil,
-agenda et définition des disponibilités du praticien, comptes rendus, pages d'administration
-(utilisateurs, praticiens, cliniques, statistiques, journal d'audit), rappels automatiques, intégration continue.
-
-Mettez cette section à jour à chaque user story terminée.
+**Reste à faire (Sprint 7 / clôture) :** remplir la recette ([docs/tests.md](docs/tests.md)),
+lancer le scan ZAP sur le site déployé, mesurer les performances en ligne, procès-verbal de recette,
+support de soutenance.
 
 ---
 
 ## Documentation des fonctionnalités
 
-### US-38 — Maintenance annoncée
-
-La fonctionnalité permet de préparer des annonces de maintenance
-et de les afficher aux utilisateurs MedLink.
-
-Documentation détaillée :
-[US-38 — Maintenance annoncée](docs/maintenance.md)
-
-**État :** développement local et test d'affichage réalisés.
-Intégration Supabase et tests administrateur en attente.
-
-### US-63 — Performance des pages
-
-Des mesures de performance ont été réalisées avec Google Lighthouse
-sur la page de connexion MedLink.
-
-- Développement : 94/100
-- Production locale : 93/100
-- Build production : réussi
-
-Documentation détaillée :
-[US-63 — Performance des pages](docs/performance.md)
-
-**État :** mesures initiales réalisées.
-Tests des autres pages et optimisations à poursuivre.
+| Sujet                                  | Document                                                           |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| Déploiement, conteneurs, Kubernetes    | [docs/deploiement.md](docs/deploiement.md)                         |
+| US-37 Sauvegarde et restauration       | [docs/sauvegarde-restauration.md](docs/sauvegarde-restauration.md) |
+| US-38 / US-49 Maintenance et horaires  | [docs/maintenance.md](docs/maintenance.md)                         |
+| US-52 / US-62 / US-64 Tests et recette | [docs/tests.md](docs/tests.md)                                     |
+| US-59 Checklist OWASP                  | [docs/OWASP_CHECKLIST.md](docs/OWASP_CHECKLIST.md)                 |
+| US-60 / US-61 Scan ZAP et corrections  | [docs/securite-zap.md](docs/securite-zap.md)                       |
+| US-63 Performance                      | [docs/performance.md](docs/performance.md)                         |
+| API (Swagger)                          | `/api/docs` sur le site, spécification `public/openapi.yaml`       |
