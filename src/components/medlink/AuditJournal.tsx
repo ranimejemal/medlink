@@ -47,19 +47,13 @@ export function AuditJournal() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0b1f3a]">
-          Journal d'audit
-        </h1>
-        <p className="text-sm text-slate-500">
-          Historique des événements de sécurité MedLink.
-        </p>
+        <h1 className="text-2xl font-bold text-[#0b1f3a]">Journal d'audit</h1>
+        <p className="text-sm text-slate-500">Historique des événements de sécurité MedLink.</p>
       </div>
 
       {loading && <p>Chargement des événements...</p>}
 
-      {error && (
-        <p className="text-red-600">Erreur : {error}</p>
-      )}
+      {error && <p className="text-red-600">Erreur : {error}</p>}
 
       {!loading && !error && events.length === 0 && (
         <p className="text-slate-500">Aucun événement trouvé.</p>
@@ -80,9 +74,7 @@ export function AuditJournal() {
             <tbody>
               {events.map((event) => (
                 <tr key={event.id} className="border-t">
-                  <td className="p-3">
-                    {new Date(event.created_at).toLocaleString("fr-FR")}
-                  </td>
+                  <td className="p-3">{new Date(event.created_at).toLocaleString("fr-FR")}</td>
                   <td className="p-3">{event.action}</td>
                   <td className="p-3">{event.severity ?? "—"}</td>
                   <td className="p-3">{event.user_email ?? "—"}</td>

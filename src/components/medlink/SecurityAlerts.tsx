@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SecurityAnalytics } from "./SecurityAnalytics";
@@ -83,17 +82,12 @@ function normalize(value: string | null | undefined): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-function matchesSearch(
-  values: (string | null | undefined)[],
-  query: string
-): boolean {
+function matchesSearch(values: (string | null | undefined)[], query: string): boolean {
   const normalizedQuery = normalize(query.trim());
 
   if (!normalizedQuery) return true;
 
-  return values.some((value) =>
-    normalize(value).includes(normalizedQuery)
-  );
+  return values.some((value) => normalize(value).includes(normalizedQuery));
 }
 
 function levelLabel(level: number): Severity {
@@ -114,9 +108,7 @@ function getAppSeverity(severity: string): Severity {
     return "Élevée";
   }
 
-  if (
-    ["medium", "moderate", "moyenne", "warning"].includes(value)
-  ) {
+  if (["medium", "moderate", "moyenne", "warning"].includes(value)) {
     return "Moyenne";
   }
 
@@ -143,10 +135,7 @@ function getIncidentSeverity(score: number): Severity {
   return "Faible";
 }
 
-function matchesAppSeverity(
-  severity: string,
-  filter: SeverityFilter
-): boolean {
+function matchesAppSeverity(severity: string, filter: SeverityFilter): boolean {
   if (filter === "all") return true;
 
   const value = getAppSeverity(severity);
@@ -160,20 +149,14 @@ function matchesAppSeverity(
   return value === "Faible";
 }
 
-function matchesWazuhSeverity(
-  level: number,
-  filter: SeverityFilter
-): boolean {
+function matchesWazuhSeverity(level: number, filter: SeverityFilter): boolean {
   if (filter === "all") return true;
   if (filter === "high") return level >= 10;
   if (filter === "medium") return level >= 7 && level < 10;
   return level < 7;
 }
 
-function matchesIncidentSeverity(
-  severity: Severity,
-  filter: SeverityFilter
-): boolean {
+function matchesIncidentSeverity(severity: Severity, filter: SeverityFilter): boolean {
   if (filter === "all") return true;
 
   if (filter === "high") {
@@ -201,22 +184,12 @@ function normalizeIp(raw: string): string {
 function isExcludedCorrelationIP(raw: string): boolean {
   const ip = normalizeIp(raw);
 
-  if (
-    !ip ||
-    ip === "::" ||
-    ip === "::1" ||
-    ip === "0.0.0.0" ||
-    ip === "unknown"
-  ) {
+  if (!ip || ip === "::" || ip === "::1" || ip === "0.0.0.0" || ip === "unknown") {
     return true;
   }
 
   if (ip.includes(":")) {
-    return (
-      ip.startsWith("fe80:") ||
-      ip.startsWith("ff") ||
-      ip.startsWith("2001:db8:")
-    );
+    return ip.startsWith("fe80:") || ip.startsWith("ff") || ip.startsWith("2001:db8:");
   }
 
   const parts = ip.split(".");
@@ -225,14 +198,7 @@ function isExcludedCorrelationIP(raw: string): boolean {
 
   const numbers = parts.map(Number);
 
-  if (
-    numbers.some(
-      (number) =>
-        !Number.isInteger(number) ||
-        number < 0 ||
-        number > 255
-    )
-  ) {
+  if (numbers.some((number) => !Number.isInteger(number) || number < 0 || number > 255)) {
     return true;
   }
 
@@ -250,10 +216,7 @@ function isExcludedCorrelationIP(raw: string): boolean {
 }
 
 function safeAttempts(value: unknown): number {
-  if (
-    typeof value !== "number" ||
-    !Number.isFinite(value)
-  ) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
     return 1;
   }
 
@@ -262,15 +225,12 @@ function safeAttempts(value: unknown): number {
 
 function buildCorrelationEvents(
   appAlerts: AppAlert[],
-  wazuhAlerts: WazuhAlert[]
+  wazuhAlerts: WazuhAlert[],
 ): CorrelationEvent[] {
   const events: CorrelationEvent[] = [];
 
   for (const alert of appAlerts) {
-    if (
-      !alert.ip_address ||
-      isExcludedCorrelationIP(alert.ip_address)
-    ) {
+    if (!alert.ip_address || isExcludedCorrelationIP(alert.ip_address)) {
       continue;
     }
 
@@ -288,19 +248,12 @@ function buildCorrelationEvents(
       description: LABELS[alert.action] ?? alert.action,
       severity,
       severityScore: getSeverityScore(severity),
-      attempts: safeAttempts(
-        alert.details?.failed_attempts ??
-          alert.details?.events ??
-          1
-      ),
+      attempts: safeAttempts(alert.details?.failed_attempts ?? alert.details?.events ?? 1),
     });
   }
 
   for (const alert of wazuhAlerts) {
-    if (
-      !alert.ip_address ||
-      isExcludedCorrelationIP(alert.ip_address)
-    ) {
+    if (!alert.ip_address || isExcludedCorrelationIP(alert.ip_address)) {
       continue;
     }
 
@@ -325,14 +278,8 @@ function buildCorrelationEvents(
   return events;
 }
 
-function buildIncidents(
-  appAlerts: AppAlert[],
-  wazuhAlerts: WazuhAlert[]
-): SecurityIncident[] {
-  const events = buildCorrelationEvents(
-    appAlerts,
-    wazuhAlerts
-  );
+function buildIncidents(appAlerts: AppAlert[], wazuhAlerts: WazuhAlert[]): SecurityIncident[] {
+  const events = buildCorrelationEvents(appAlerts, wazuhAlerts);
 
   const ipGroups = new Map<string, CorrelationEvent[]>();
 
@@ -357,38 +304,19 @@ function buildIncidents(
 
       if (!firstEvent || !lastEvent) return;
 
-      const sources = Array.from(
-        new Set(currentGroup.map((event) => event.source))
-      );
+      const sources = Array.from(new Set(currentGroup.map((event) => event.source)));
 
-      const maxSeverity = Math.max(
-        ...currentGroup.map((event) => event.severityScore)
-      );
+      const maxSeverity = Math.max(...currentGroup.map((event) => event.severityScore));
 
-      const attempts = currentGroup.reduce(
-        (total, event) => total + event.attempts,
-        0
-      );
+      const attempts = currentGroup.reduce((total, event) => total + event.attempts, 0);
 
-      const repetitionBonus = Math.min(
-        20,
-        (currentGroup.length - 1) * 5
-      );
+      const repetitionBonus = Math.min(20, (currentGroup.length - 1) * 5);
 
       const sourceBonus = sources.length > 1 ? 10 : 0;
 
-      const attemptsBonus = Math.min(
-        10,
-        Math.max(0, attempts - currentGroup.length) * 2
-      );
+      const attemptsBonus = Math.min(10, Math.max(0, attempts - currentGroup.length) * 2);
 
-      const score = Math.min(
-        100,
-        maxSeverity +
-          repetitionBonus +
-          sourceBonus +
-          attemptsBonus
-      );
+      const score = Math.min(100, maxSeverity + repetitionBonus + sourceBonus + attemptsBonus);
 
       incidents.push({
         id: `${ip}-${firstEvent.id}`,
@@ -410,10 +338,7 @@ function buildIncidents(
 
       const firstEvent = currentGroup[0];
 
-      if (
-        firstEvent &&
-        event.date - firstEvent.date <= CORRELATION_WINDOW
-      ) {
+      if (firstEvent && event.date - firstEvent.date <= CORRELATION_WINDOW) {
         currentGroup.push(event);
       } else {
         saveIncident();
@@ -424,11 +349,7 @@ function buildIncidents(
     saveIncident();
   }
 
-  return incidents.sort(
-    (a, b) =>
-      b.score - a.score ||
-      b.lastSeen - a.lastSeen
-  );
+  return incidents.sort((a, b) => b.score - a.score || b.lastSeen - a.lastSeen);
 }
 
 function severityStyle(severity: Severity): string {
@@ -450,13 +371,9 @@ function AppAlertCard({ alert }: { alert: AppAlert }) {
   return (
     <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap justify-between gap-2">
-        <strong className="text-red-700">
-          {LABELS[alert.action] ?? alert.action}
-        </strong>
+        <strong className="text-red-700">{LABELS[alert.action] ?? alert.action}</strong>
 
-        <span className="text-xs text-slate-500">
-          {fmt(alert.created_at)}
-        </span>
+        <span className="text-xs text-slate-500">{fmt(alert.created_at)}</span>
       </div>
 
       <p className="mt-2 text-sm text-slate-700">
@@ -466,9 +383,7 @@ function AppAlertCard({ alert }: { alert: AppAlert }) {
       </p>
 
       {details.window_minutes !== undefined && (
-        <p className="mt-1 text-xs text-slate-500">
-          Fenêtre : {details.window_minutes} minutes
-        </p>
+        <p className="mt-1 text-xs text-slate-500">Fenêtre : {details.window_minutes} minutes</p>
       )}
     </li>
   );
@@ -480,9 +395,7 @@ function WazuhAlertCard({ alert }: { alert: WazuhAlert }) {
   return (
     <li className="rounded-xl border border-red-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <strong className="text-red-700">
-          {alert.description}
-        </strong>
+        <strong className="text-red-700">{alert.description}</strong>
 
         <span
           className={`rounded-full border px-3 py-1 text-xs font-semibold ${severityStyle(severity)}`}
@@ -493,37 +406,23 @@ function WazuhAlertCard({ alert }: { alert: WazuhAlert }) {
 
       <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
         <p>Règle Wazuh : {alert.rule_id}</p>
-        <p>
-          Événement : {alert.event_type ?? "Non renseigné"}
-        </p>
-        <p>
-          Adresse IP : {alert.ip_address ?? "Non renseignée"}
-        </p>
-        <p>
-          Tentatives : {alert.attempts ?? "Non renseignées"}
-        </p>
+        <p>Événement : {alert.event_type ?? "Non renseigné"}</p>
+        <p>Adresse IP : {alert.ip_address ?? "Non renseignée"}</p>
+        <p>Tentatives : {alert.attempts ?? "Non renseignées"}</p>
         <p>Date : {fmt(alert.detected_at)}</p>
       </div>
 
-      <p className="mt-2 break-all text-xs text-slate-400">
-        ID Wazuh : {alert.wazuh_alert_id}
-      </p>
+      <p className="mt-2 break-all text-xs text-slate-400">ID Wazuh : {alert.wazuh_alert_id}</p>
     </li>
   );
 }
 
-function IncidentCard({
-  incident,
-}: {
-  incident: SecurityIncident;
-}) {
+function IncidentCard({ incident }: { incident: SecurityIncident }) {
   return (
     <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-bold text-[#0b1f3a]">
-            Incident détecté · {incident.ip}
-          </h3>
+          <h3 className="font-bold text-[#0b1f3a]">Incident détecté · {incident.ip}</h3>
 
           <p className="mt-1 text-sm text-slate-500">
             {incident.events.length} événements corrélés
@@ -578,23 +477,16 @@ function IncidentCard({
 
       <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
         {incident.events.map((event) => (
-          <div
-            key={event.id}
-            className="flex flex-wrap items-start justify-between gap-2 text-sm"
-          >
+          <div key={event.id} className="flex flex-wrap items-start justify-between gap-2 text-sm">
             <div>
-              <p className="font-medium text-slate-700">
-                {event.description}
-              </p>
+              <p className="font-medium text-slate-700">{event.description}</p>
 
               <p className="text-xs text-slate-500">
                 Source : {event.source} · {event.severity}
               </p>
             </div>
 
-            <span className="text-xs text-slate-500">
-              {fmt(event.date)}
-            </span>
+            <span className="text-xs text-slate-500">{fmt(event.date)}</span>
           </div>
         ))}
       </div>
@@ -616,8 +508,7 @@ export function SecurityAlerts() {
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
-  const [severityFilter, setSeverityFilter] =
-    useState<SeverityFilter>("all");
+  const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("all");
 
   const [demoMode, setDemoMode] = useState(false);
 
@@ -660,11 +551,9 @@ export function SecurityAlerts() {
       const [appResult, wazuhResult] = await Promise.all([
         supabase
           .from("audit_logs")
-          .select(
-            "id, created_at, action, severity, user_email, ip_address, details"
-          )
+          .select("id, created_at, action, severity, user_email, ip_address, details")
           .or(
-            "action.like.security.%,action.in.(auth.login_failed,auth.login_blocked,auth.login_inactive)"
+            "action.like.security.%,action.in.(auth.login_failed,auth.login_blocked,auth.login_inactive)",
           )
           .order("created_at", { ascending: false })
           .limit(50),
@@ -672,27 +561,21 @@ export function SecurityAlerts() {
         supabase
           .from("wazuh_alerts")
           .select(
-            "id, wazuh_alert_id, rule_id, rule_level, description, event_type, ip_address, attempts, detected_at, created_at"
+            "id, wazuh_alert_id, rule_id, rule_level, description, event_type, ip_address, attempts, detected_at, created_at",
           )
           .order("detected_at", { ascending: false })
           .limit(50),
       ]);
 
       if (appResult.error) {
-        throw new Error(
-          `Alertes applicatives : ${appResult.error.message}`
-        );
+        throw new Error(`Alertes applicatives : ${appResult.error.message}`);
       }
 
       if (wazuhResult.error) {
-        throw new Error(
-          `Alertes Wazuh : ${wazuhResult.error.message}`
-        );
+        throw new Error(`Alertes Wazuh : ${wazuhResult.error.message}`);
       }
 
-      const normalizedAppAlerts: AppAlert[] = (
-        appResult.data ?? []
-      ).map((item) => ({
+      const normalizedAppAlerts: AppAlert[] = (appResult.data ?? []).map((item) => ({
         ...item,
         details: (item.details ?? null) as AlertDetails | null,
       }));
@@ -701,11 +584,7 @@ export function SecurityAlerts() {
       setWazuhAlerts(wazuhResult.data ?? []);
       setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Erreur de chargement."
-      );
+      setError(err instanceof Error ? err.message : "Erreur de chargement.");
     } finally {
       setLoading(false);
     }
@@ -745,18 +624,12 @@ export function SecurityAlerts() {
             alert.ip_address,
             alert.wazuh_alert_id,
           ],
-          search
+          search,
         );
 
-        return (
-          searchMatch &&
-          matchesWazuhSeverity(
-            alert.rule_level,
-            severityFilter
-          )
-        );
+        return searchMatch && matchesWazuhSeverity(alert.rule_level, severityFilter);
       }),
-    [wazuhAlerts, search, severityFilter]
+    [wazuhAlerts, search, severityFilter],
   );
 
   const filteredAppAlerts = useMemo(
@@ -770,36 +643,25 @@ export function SecurityAlerts() {
             alert.ip_address,
             alert.severity,
           ],
-          search
+          search,
         );
 
-        return (
-          searchMatch &&
-          matchesAppSeverity(
-            alert.severity,
-            severityFilter
-          )
-        );
+        return searchMatch && matchesAppSeverity(alert.severity, severityFilter);
       }),
-    [appAlerts, search, severityFilter]
+    [appAlerts, search, severityFilter],
   );
 
-  const totalFiltered =
-    filteredWazuhAlerts.length + filteredAppAlerts.length;
+  const totalFiltered = filteredWazuhAlerts.length + filteredAppAlerts.length;
 
   // La corrélation utilise toutes les alertes,
   // puis applique les filtres sur les incidents obtenus.
   const allIncidents = useMemo(
     () =>
       buildIncidents(
-        demoMode
-          ? [...appAlerts, demoAlerts.app]
-          : appAlerts,
-        demoMode
-          ? [...wazuhAlerts, demoAlerts.wazuh]
-          : wazuhAlerts
+        demoMode ? [...appAlerts, demoAlerts.app] : appAlerts,
+        demoMode ? [...wazuhAlerts, demoAlerts.wazuh] : wazuhAlerts,
       ),
-    [appAlerts, wazuhAlerts, demoMode, demoAlerts]
+    [appAlerts, wazuhAlerts, demoMode, demoAlerts],
   );
 
   const incidents = useMemo(
@@ -809,102 +671,67 @@ export function SecurityAlerts() {
           [
             incident.ip,
             incident.severity,
-            ...incident.events.map(
-              (event) => event.description
-            ),
+            ...incident.events.map((event) => event.description),
             ...incident.sources,
           ],
-          search
+          search,
         );
 
-        return (
-          searchMatch &&
-          matchesIncidentSeverity(
-            incident.severity,
-            severityFilter
-          )
-        );
+        return searchMatch && matchesIncidentSeverity(incident.severity, severityFilter);
       }),
-    [allIncidents, search, severityFilter]
+    [allIncidents, search, severityFilter],
   );
 
-  const criticalIncidents = incidents.filter(
-    (incident) => incident.severity === "Critique"
-  ).length;
+  const criticalIncidents = incidents.filter((incident) => incident.severity === "Critique").length;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0b1f3a]">
-          Centre de sécurité MedLink
-        </h1>
+        <h1 className="text-2xl font-bold text-[#0b1f3a]">Centre de sécurité MedLink</h1>
 
         <p className="mt-1 text-sm text-slate-500">
-          Supervision des événements de sécurité et des alertes SIEM.
-          Actualisation automatique toutes les minutes.
+          Supervision des événements de sécurité et des alertes SIEM. Actualisation automatique
+          toutes les minutes.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border bg-white p-4">
-          <p className="text-sm text-slate-500">
-            Alertes applicatives
-          </p>
+          <p className="text-sm text-slate-500">Alertes applicatives</p>
 
-          <p className="mt-1 text-2xl font-bold text-[#0b1f3a]">
-            {appAlerts.length}
-          </p>
+          <p className="mt-1 text-2xl font-bold text-[#0b1f3a]">{appAlerts.length}</p>
         </div>
 
         <div className="rounded-xl border bg-white p-4">
-          <p className="text-sm text-slate-500">
-            Alertes Wazuh
-          </p>
+          <p className="text-sm text-slate-500">Alertes Wazuh</p>
 
-          <p className="mt-1 text-2xl font-bold text-red-600">
-            {wazuhAlerts.length}
-          </p>
+          <p className="mt-1 text-2xl font-bold text-red-600">{wazuhAlerts.length}</p>
         </div>
 
         <div className="rounded-xl border bg-white p-4">
-          <p className="text-sm text-slate-500">
-            Alertes sur 24 heures
-          </p>
+          <p className="text-sm text-slate-500">Alertes sur 24 heures</p>
 
-          <p className="mt-1 text-2xl font-bold text-[#0b1f3a]">
-            {last24h}
-          </p>
+          <p className="mt-1 text-2xl font-bold text-[#0b1f3a]">{last24h}</p>
         </div>
       </div>
 
-      <SecurityAnalytics
-        appAlerts={appAlerts}
-        wazuhAlerts={wazuhAlerts}
-      />
+      <SecurityAnalytics appAlerts={appAlerts} wazuhAlerts={wazuhAlerts} />
 
       <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="font-bold text-[#0b1f3a]">
-          Recherche et filtrage des alertes
-        </h2>
+        <h2 className="font-bold text-[#0b1f3a]">Recherche et filtrage des alertes</h2>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <input
             type="text"
             placeholder="Rechercher par IP, événement, règle..."
             value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
+            onChange={(event) => setSearch(event.target.value)}
             className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm outline-none focus:border-cyan-600"
           />
 
           <select
             value={severityFilter}
-            onChange={(event) =>
-              setSeverityFilter(
-                event.target.value as SeverityFilter
-              )
-            }
+            onChange={(event) => setSeverityFilter(event.target.value as SeverityFilter)}
             className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm outline-none focus:border-cyan-600"
           >
             <option value="all">Toutes les gravités</option>
@@ -938,28 +765,22 @@ export function SecurityAlerts() {
             </h2>
 
             <p className="text-sm text-slate-500">
-              Regroupement des événements par adresse IP
-              dans une fenêtre de 15 minutes.
+              Regroupement des événements par adresse IP dans une fenêtre de 15 minutes.
             </p>
 
             <div className="mt-3">
               <button
                 type="button"
                 aria-pressed={demoMode}
-                onClick={() =>
-                  setDemoMode((previous) => !previous)
-                }
+                onClick={() => setDemoMode((previous) => !previous)}
                 className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-800"
               >
-                {demoMode
-                  ? "Désactiver la démonstration"
-                  : "Lancer une simulation"}
+                {demoMode ? "Désactiver la démonstration" : "Lancer une simulation"}
               </button>
 
               {demoMode && (
                 <p className="mt-2 text-sm font-medium text-cyan-700">
-                  Mode démonstration actif : données locales
-                  non enregistrées dans Supabase.
+                  Mode démonstration actif : données locales non enregistrées dans Supabase.
                 </p>
               )}
             </div>
@@ -972,61 +793,43 @@ export function SecurityAlerts() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-slate-500">
-              Incidents corrélés
-            </p>
+            <p className="text-sm text-slate-500">Incidents corrélés</p>
 
-            <p className="mt-1 text-2xl font-bold text-[#0b1f3a]">
-              {incidents.length}
-            </p>
+            <p className="mt-1 text-2xl font-bold text-[#0b1f3a]">{incidents.length}</p>
           </div>
 
           <div className="rounded-xl border bg-white p-4">
-            <p className="text-sm text-slate-500">
-              Incidents critiques
-            </p>
+            <p className="text-sm text-slate-500">Incidents critiques</p>
 
-            <p className="mt-1 text-2xl font-bold text-red-600">
-              {criticalIncidents}
-            </p>
+            <p className="mt-1 text-2xl font-bold text-red-600">{criticalIncidents}</p>
           </div>
         </div>
 
         {incidents.length === 0 ? (
           <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">
-            Aucun incident corrélé trouvé. Il faut au moins
-            deux événements associés à la même adresse IP
-            dans une fenêtre de 15 minutes.
+            Aucun incident corrélé trouvé. Il faut au moins deux événements associés à la même
+            adresse IP dans une fenêtre de 15 minutes.
           </div>
         ) : (
           <div className="space-y-3">
             {incidents.map((incident) => (
-              <IncidentCard
-                key={incident.id}
-                incident={incident}
-              />
+              <IncidentCard key={incident.id} incident={incident} />
             ))}
           </div>
         )}
 
         <p className="text-xs text-slate-400">
-          Le score est calculé par une méthode heuristique
-          basée sur la gravité, le nombre d'événements,
-          les tentatives et la diversité des sources.
-          Il ne constitue pas encore une prédiction ML.
+          Le score est calculé par une méthode heuristique basée sur la gravité, le nombre
+          d'événements, les tentatives et la diversité des sources. Il ne constitue pas encore une
+          prédiction ML.
         </p>
       </section>
 
-      {loading && (
-        <p className="text-sm text-slate-500">
-          Chargement des alertes...
-        </p>
-      )}
+      {loading && <p className="text-sm text-slate-500">Chargement des alertes...</p>}
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           Erreur : {error}
-
           <button
             type="button"
             onClick={() => void load()}
@@ -1041,9 +844,7 @@ export function SecurityAlerts() {
         <>
           <section className="space-y-3">
             <div>
-              <h2 className="text-lg font-bold text-[#0b1f3a]">
-                Alertes SIEM — Wazuh
-              </h2>
+              <h2 className="text-lg font-bold text-[#0b1f3a]">Alertes SIEM — Wazuh</h2>
 
               <p className="text-sm text-slate-500">
                 Alertes détectées et transmises par le collecteur SIEM.
@@ -1057,19 +858,14 @@ export function SecurityAlerts() {
             ) : (
               <ul className="space-y-3">
                 {filteredWazuhAlerts.map((alert) => (
-                  <WazuhAlertCard
-                    key={alert.id}
-                    alert={alert}
-                  />
+                  <WazuhAlertCard key={alert.id} alert={alert} />
                 ))}
               </ul>
             )}
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-[#0b1f3a]">
-              Alertes applicatives — MedLink
-            </h2>
+            <h2 className="text-lg font-bold text-[#0b1f3a]">Alertes applicatives — MedLink</h2>
 
             {filteredAppAlerts.length === 0 ? (
               <p className="text-sm text-slate-500">
@@ -1078,10 +874,7 @@ export function SecurityAlerts() {
             ) : (
               <ul className="space-y-3">
                 {filteredAppAlerts.map((alert) => (
-                  <AppAlertCard
-                    key={alert.id}
-                    alert={alert}
-                  />
+                  <AppAlertCard key={alert.id} alert={alert} />
                 ))}
               </ul>
             )}

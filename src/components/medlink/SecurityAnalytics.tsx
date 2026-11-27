@@ -1,4 +1,3 @@
-
 import type { ReactNode } from "react";
 import {
   ResponsiveContainer,
@@ -83,8 +82,7 @@ function getDayKey(value: string): string {
     day: "2-digit",
   }).formatToParts(date);
 
-  const part = (type: string) =>
-    parts.find((item) => item.type === type)?.value ?? "";
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
 
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
@@ -97,24 +95,15 @@ function normalizeAttackType(type: string): string {
     .replace(/[_\s-]+/g, ".")
     .replace(/\.+/g, ".");
 
-  if (
-    value.includes("brute.force") ||
-    value.includes("bruteforce")
-  ) {
+  if (value.includes("brute.force") || value.includes("bruteforce")) {
     return "Brute Force";
   }
 
-  if (
-    value.includes("suspicious") ||
-    value.includes("access.denied")
-  ) {
+  if (value.includes("suspicious") || value.includes("access.denied")) {
     return "Accès suspect";
   }
 
-  if (
-    value.includes("mass.access") ||
-    value.includes("mass.accessed")
-  ) {
+  if (value.includes("mass.access") || value.includes("mass.accessed")) {
     return "Accès massif aux dossiers";
   }
 
@@ -149,15 +138,11 @@ function getAppSeverity(severity: string): string {
     return "Critique";
   }
 
-  if (
-    ["high", "élevée", "elevee", "error"].includes(value)
-  ) {
+  if (["high", "élevée", "elevee", "error"].includes(value)) {
     return "Élevée";
   }
 
-  if (
-    ["medium", "moderate", "moyenne", "warning"].includes(value)
-  ) {
+  if (["medium", "moderate", "moyenne", "warning"].includes(value)) {
     return "Moyenne";
   }
 
@@ -168,14 +153,7 @@ function getAppSeverity(severity: string): string {
 function isPublicIPv4(ip: string): boolean {
   const parts = ip.split(".");
 
-  if (
-    parts.length !== 4 ||
-    parts.some(
-      (part) =>
-        !/^\d{1,3}$/.test(part) ||
-        Number(part) > 255
-    )
-  ) {
+  if (parts.length !== 4 || parts.some((part) => !/^\d{1,3}$/.test(part) || Number(part) > 255)) {
     return false;
   }
 
@@ -246,43 +224,28 @@ function isPublicIP(value: string | null): boolean {
 }
 
 // Carte de statistiques
-function Panel({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-5 font-bold text-[#0b1f3a]">
-        {title}
-      </h3>
+      <h3 className="mb-5 font-bold text-[#0b1f3a]">{title}</h3>
       {children}
     </section>
   );
 }
 
 // Composant principal
-export function SecurityAnalytics({
-  appAlerts,
-  wazuhAlerts,
-}: Props) {
+export function SecurityAnalytics({ appAlerts, wazuhAlerts }: Props) {
   // 1. Attaques par type
   const typeMap = new Map<string, number>();
 
   wazuhAlerts.forEach((alert) => {
-    const type = normalizeAttackType(
-      alert.event_type || "Autre événement"
-    );
+    const type = normalizeAttackType(alert.event_type || "Autre événement");
 
     typeMap.set(type, (typeMap.get(type) ?? 0) + 1);
   });
 
   appAlerts.forEach((alert) => {
-    const type = normalizeAttackType(
-      alert.action || "Autre événement"
-    );
+    const type = normalizeAttackType(alert.action || "Autre événement");
 
     typeMap.set(type, (typeMap.get(type) ?? 0) + 1);
   });
@@ -305,9 +268,7 @@ export function SecurityAnalytics({
   >();
 
   for (let i = 6; i >= 0; i--) {
-    const date = new Date(
-      now.getTime() - i * 24 * 60 * 60 * 1000
-    );
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
 
     const key = getDayKey(date.toISOString());
 
@@ -343,27 +304,23 @@ export function SecurityAnalytics({
   };
 
   wazuhAlerts.forEach((alert) => {
-  const severity = getSeverity(alert.rule_level);
+    const severity = getSeverity(alert.rule_level);
 
-  severityMap[severity] = (severityMap[severity] ?? 0) + 1;
-});
+    severityMap[severity] = (severityMap[severity] ?? 0) + 1;
+  });
 
-appAlerts.forEach((alert) => {
-  const severity = getAppSeverity(alert.severity);
+  appAlerts.forEach((alert) => {
+    const severity = getAppSeverity(alert.severity);
 
-  severityMap[severity] = (severityMap[severity] ?? 0) + 1;
-});
+    severityMap[severity] = (severityMap[severity] ?? 0) + 1;
+  });
 
-  const severityData = Object.entries(severityMap).map(
-    ([name, value]) => ({
-      name,
-      value,
-    })
-  );
+  const severityData = Object.entries(severityMap).map(([name, value]) => ({
+    name,
+    value,
+  }));
 
-  const filteredSeverityData = severityData.filter(
-    (item) => item.value > 0
-  );
+  const filteredSeverityData = severityData.filter((item) => item.value > 0);
 
   // 4. Top 5 des adresses IP publiques suspectes
   const ipMap = new Map<string, number>();
@@ -387,9 +344,7 @@ appAlerts.forEach((alert) => {
     <div className="space-y-5">
       {/* En-tête */}
       <div>
-        <h2 className="text-xl font-bold text-[#0b1f3a]">
-          Analyse et statistiques SIEM
-        </h2>
+        <h2 className="text-xl font-bold text-[#0b1f3a]">Analyse et statistiques SIEM</h2>
 
         <p className="mt-1 text-sm text-slate-500">
           Analyse des événements Wazuh et MedLink à partir des alertes chargées.
@@ -397,42 +352,22 @@ appAlerts.forEach((alert) => {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-
         {/* 1. Attaques par type */}
         <Panel title="Attaques par type">
           {typeData.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              Aucune donnée disponible.
-            </p>
+            <p className="text-sm text-slate-500">Aucune donnée disponible.</p>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart
-                data={typeData}
-                layout="vertical"
-                margin={{ left: 10, right: 20 }}
-              >
+              <BarChart data={typeData} layout="vertical" margin={{ left: 10, right: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
 
-                <XAxis
-                  type="number"
-                  allowDecimals={false}
-                />
+                <XAxis type="number" allowDecimals={false} />
 
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={145}
-                  tick={{ fontSize: 11 }}
-                />
+                <YAxis type="category" dataKey="name" width={145} tick={{ fontSize: 11 }} />
 
                 <Tooltip />
 
-                <Bar
-                  dataKey="total"
-                  name="Alertes"
-                  fill={COLORS.red}
-                  radius={[0, 5, 5, 0]}
-                />
+                <Bar dataKey="total" name="Alertes" fill={COLORS.red} radius={[0, 5, 5, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -441,16 +376,10 @@ appAlerts.forEach((alert) => {
         {/* 2. Évolution temporelle */}
         <Panel title="Évolution des alertes — 7 jours">
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart
-              data={dailyData}
-              margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
-            >
+            <LineChart data={dailyData} margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
 
-              <XAxis
-                dataKey="day"
-                tick={{ fontSize: 11 }}
-              />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
 
               <YAxis allowDecimals={false} />
 
@@ -484,9 +413,7 @@ appAlerts.forEach((alert) => {
         {/* 3. Répartition des gravités */}
         <Panel title="Répartition par niveau de gravité">
           {filteredSeverityData.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              Aucune donnée disponible.
-            </p>
+            <p className="text-sm text-slate-500">Aucune donnée disponible.</p>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
@@ -497,15 +424,10 @@ appAlerts.forEach((alert) => {
                   cx="50%"
                   cy="50%"
                   outerRadius={95}
-                  label={({ name, value }) =>
-                    `${name}: ${value}`
-                  }
+                  label={({ name, value }) => `${name}: ${value}`}
                 >
                   {filteredSeverityData.map((item) => (
-                    <Cell
-                      key={item.name}
-                      fill={severityColors[item.name]}
-                    />
+                    <Cell key={item.name} fill={severityColors[item.name]} />
                   ))}
                 </Pie>
 
@@ -520,32 +442,19 @@ appAlerts.forEach((alert) => {
         {/* 4. Top 5 des IP */}
         <Panel title="Top 5 des adresses IP publiques suspectes">
           {topIPs.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              Aucune adresse IP publique disponible.
-            </p>
+            <p className="text-sm text-slate-500">Aucune adresse IP publique disponible.</p>
           ) : (
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart
-                data={topIPs}
-                margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
-              >
+              <BarChart data={topIPs} margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
 
-                <XAxis
-                  dataKey="ip"
-                  tick={{ fontSize: 10 }}
-                />
+                <XAxis dataKey="ip" tick={{ fontSize: 10 }} />
 
                 <YAxis allowDecimals={false} />
 
                 <Tooltip />
 
-                <Bar
-                  dataKey="total"
-                  name="Alertes"
-                  fill={COLORS.blue}
-                  radius={[5, 5, 0, 0]}
-                />
+                <Bar dataKey="total" name="Alertes" fill={COLORS.blue} radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -554,11 +463,9 @@ appAlerts.forEach((alert) => {
 
       {/* Note */}
       <p className="text-xs text-slate-400">
-        Statistiques calculées sur les alertes récupérées par
-        l'application. Les adresses IPv4 privées, locales et
-        réservées aux tests sont exclues du classement IP.
-        Les adresses IPv6 locales et de documentation sont
-        également exclues.
+        Statistiques calculées sur les alertes récupérées par l'application. Les adresses IPv4
+        privées, locales et réservées aux tests sont exclues du classement IP. Les adresses IPv6
+        locales et de documentation sont également exclues.
       </p>
     </div>
   );

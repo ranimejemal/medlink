@@ -1,4 +1,3 @@
-
 export type AppSecurityAlert = {
   id: string;
   created_at: string;
@@ -65,13 +64,7 @@ function normalizeIp(ip: string | null): string | null {
 
   const value = ip.trim().toLowerCase();
 
-  if (
-    !value ||
-    value === "::1" ||
-    value === "127.0.0.1" ||
-    value === "::" ||
-    value === "unknown"
-  ) {
+  if (!value || value === "::1" || value === "127.0.0.1" || value === "::" || value === "unknown") {
     return null;
   }
 
@@ -165,15 +158,9 @@ export function correlateSecurityAlerts(
 
       // Score basé sur la gravité maximale et la répétition
       const maxScore = Math.max(...cluster.map((e) => e.baseScore));
-      const repetitionBonus = Math.min(
-        (cluster.length - 1) * 8,
-        24,
-      );
+      const repetitionBonus = Math.min((cluster.length - 1) * 8, 24);
 
-      const riskScore = Math.min(
-        100,
-        maxScore + repetitionBonus,
-      );
+      const riskScore = Math.min(100, maxScore + repetitionBonus);
 
       const sources = [...new Set(cluster.map((e) => e.source))];
 
@@ -196,10 +183,7 @@ export function correlateSecurityAlerts(
     for (const event of ipEvents) {
       const previous = cluster[cluster.length - 1];
 
-      if (
-        previous &&
-        event.timestamp - previous.timestamp > CORRELATION_WINDOW_MS
-      ) {
+      if (previous && event.timestamp - previous.timestamp > CORRELATION_WINDOW_MS) {
         saveCluster();
       }
 
@@ -209,7 +193,5 @@ export function correlateSecurityAlerts(
     saveCluster();
   }
 
-  return incidents.sort(
-    (a, b) => b.risk_score - a.risk_score,
-  );
+  return incidents.sort((a, b) => b.risk_score - a.risk_score);
 }
