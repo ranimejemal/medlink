@@ -245,7 +245,7 @@ function isExcludedCorrelationIP(raw: string): boolean {
     (a === 192 && b === 0 && c === 2) ||
     (a === 198 && b === 51 && c === 100) ||
     (a === 203 && b === 0 && c === 113) ||
-    a >= 224
+    (a !== undefined && a >= 224)
   );
 }
 
