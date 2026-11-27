@@ -82,10 +82,10 @@ function MaintenancePage() {
       if (result.suspicious) {
         setDraft(null);
         setError(
-            result.threatType === "xss"
-              ? "Tentative XSS détectée côté serveur."
-              : "Saisie SQL suspecte détectée côté serveur."
-          );
+          result.threatType === "xss"
+            ? "Tentative XSS détectée côté serveur."
+            : "Saisie SQL suspecte détectée côté serveur.",
+        );
         return;
       }
 

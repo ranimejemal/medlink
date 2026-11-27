@@ -7,17 +7,18 @@ import { detectXss } from "@/lib/xss-detector";
 export const checkMaintenanceSecurity = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({
-      title: z.string().max(120),
-      message: z.string().max(2000),
-    }).parse(input)
+    z
+      .object({
+        title: z.string().max(120),
+        message: z.string().max(2000),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { data: isAdmin, error: roleError } =
-      await context.supabase.rpc("has_role", {
-        _user_id: context.userId,
-        _role: "admin",
-      });
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
 
     if (roleError || !isAdmin) {
       throw new Error("Accès administrateur refusé");
@@ -33,28 +34,20 @@ export const checkMaintenanceSecurity = createServerFn({ method: "POST" })
     const suspicious = sqlSuspicious || xssSuspicious;
 
     if (suspicious) {
-      const { supabaseAdmin } = await import(
-        "@/integrations/supabase/client.server"
-      );
-      const { getRequestIP } = await import(
-        "@tanstack/react-start/server"
-      );
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { getRequestIP } = await import("@tanstack/react-start/server");
 
-      const { error } = await supabaseAdmin
-        .from("audit_logs")
-        .insert({
-          user_id: context.userId,
-          action: xssSuspicious
-            ? "security.xss_attempt"
-            : "security.sql_injection",
-          entity: "maintenance",
-          severity: "critical",
-          ip_address: getRequestIP() ?? null,
-          details: {
-            is_test: true,
-            detection: xssSuspicious ? "xss_pattern" : "sql_pattern",
-          },
-        });
+      const { error } = await supabaseAdmin.from("audit_logs").insert({
+        user_id: context.userId,
+        action: xssSuspicious ? "security.xss_attempt" : "security.sql_injection",
+        entity: "maintenance",
+        severity: "critical",
+        ip_address: getRequestIP() ?? null,
+        details: {
+          is_test: true,
+          detection: xssSuspicious ? "xss_pattern" : "sql_pattern",
+        },
+      });
 
       if (error) {
         console.error("Échec journalisation SQL Injection :", error);
@@ -64,10 +57,6 @@ export const checkMaintenanceSecurity = createServerFn({ method: "POST" })
 
     return {
       suspicious,
-      threatType: xssSuspicious
-        ? "xss"
-        : sqlSuspicious
-          ? "sql_injection"
-          : null,
+      threatType: xssSuspicious ? "xss" : sqlSuspicious ? "sql_injection" : null,
     };
   });
