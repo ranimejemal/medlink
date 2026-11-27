@@ -1,10 +1,10 @@
-# US-08 / US-12 / US-48: every minute, asks the app to send confirmations and reminders.
-# Replaces the "cron" service of docker-compose.yml. Safe to run alongside pg_cron in Supabase:
-# each e-mail is sent once.
+# US-08 / US-12 / US-48: every minute, asks the backend to send confirmations and reminders.
+# Kubernetes runs it on any available server. Each e-mail is sent only once
+# (claim_appointment_emails), even if a run is repeated.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: medlink-appointment-emails
+  name: appointment-emails
   namespace: medlink
 spec:
   schedule: "* * * * *"
@@ -27,11 +27,15 @@ spec:
             - name: trigger
               image: curlimages/curl:8.11.1
               env:
-                - name: CRON_SECRET
-                  valueFrom: { secretKeyRef: { name: medlink-secrets, key: CRON_SECRET } }
+                - {
+                    name: CRON_SECRET,
+                    valueFrom: { secretKeyRef: { name: medlink-app, key: CRON_SECRET } },
+                  }
               command: ["/bin/sh", "-c"]
               args:
-                - curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" http://medlink.medlink.svc.cluster.local/api/cron/appointment-emails
+                - >-
+                  curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET"
+                  http://backend:3000/api/cron/appointment-emails
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true

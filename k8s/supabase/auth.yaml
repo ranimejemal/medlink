@@ -1,0 +1,128 @@
+# Supabase Auth (GoTrue): sign-up, sign-in, e-mail codes, password reset, MFA (TOTP).
+# 2 replicas on different servers; stateless (everything is in the database).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: medlink
+  labels: { app: auth, tier: supabase }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: auth } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  template:
+    metadata: { labels: { app: auth, tier: supabase } }
+    spec:
+      automountServiceAccountToken: false
+      topologySpreadConstraints:
+        - {
+            maxSkew: 1,
+            topologyKey: kubernetes.io/hostname,
+            whenUnsatisfiable: ScheduleAnyway,
+            labelSelector: { matchLabels: { app: auth } },
+          }
+      containers:
+        - name: auth
+          image: supabase/gotrue:v2.177.0
+          ports: [{ name: http, containerPort: 9999 }]
+          env:
+            - {
+                name: AUTH_DB_PASSWORD,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: AUTH_DB_PASSWORD } },
+              }
+            - {
+                name: GOTRUE_JWT_SECRET,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: JWT_SECRET } },
+              }
+            - {
+                name: GOTRUE_DB_DATABASE_URL,
+                value: "postgres://supabase_auth_admin:$(AUTH_DB_PASSWORD)@medlink-db-rw:5432/postgres?search_path=auth",
+              }
+            - { name: GOTRUE_DB_DRIVER, value: postgres }
+            - { name: GOTRUE_API_HOST, value: 0.0.0.0 }
+            - { name: GOTRUE_API_PORT, value: "9999" }
+            - {
+                name: API_EXTERNAL_URL,
+                valueFrom: { configMapKeyRef: { name: medlink-config, key: PUBLIC_URL } },
+              }
+            - {
+                name: GOTRUE_SITE_URL,
+                valueFrom: { configMapKeyRef: { name: medlink-config, key: PUBLIC_URL } },
+              }
+            - { name: GOTRUE_URI_ALLOW_LIST, value: "*" }
+            - { name: GOTRUE_DISABLE_SIGNUP, value: "false" }
+            - { name: GOTRUE_JWT_ADMIN_ROLES, value: service_role }
+            - { name: GOTRUE_JWT_AUD, value: authenticated }
+            - { name: GOTRUE_JWT_DEFAULT_GROUP_NAME, value: authenticated }
+            - { name: GOTRUE_JWT_EXP, value: "3600" }
+            - { name: GOTRUE_EXTERNAL_EMAIL_ENABLED, value: "true" }
+            - { name: GOTRUE_MAILER_AUTOCONFIRM, value: "false" }
+            - { name: GOTRUE_MAILER_OTP_EXP, value: "3600" }
+            - { name: GOTRUE_MAILER_OTP_LENGTH, value: "6" }
+            # Sign-up e-mail with the 6-digit code (the register page asks for it, like on Supabase cloud).
+            - {
+                name: GOTRUE_MAILER_TEMPLATES_CONFIRMATION,
+                value: "http://gateway:8000/mail-templates/confirmation.html",
+              }
+            - {
+                name: GOTRUE_MAILER_SUBJECTS_CONFIRMATION,
+                value: "MedLink : votre code de confirmation",
+              }
+            - {
+                name: GOTRUE_MAILER_TEMPLATES_RECOVERY,
+                value: "http://gateway:8000/mail-templates/recovery.html",
+              }
+            - {
+                name: GOTRUE_MAILER_SUBJECTS_RECOVERY,
+                value: "MedLink : réinitialisation du mot de passe",
+              }
+            - { name: GOTRUE_MAILER_URLPATHS_CONFIRMATION, value: /auth/v1/verify }
+            - { name: GOTRUE_MAILER_URLPATHS_RECOVERY, value: /auth/v1/verify }
+            - { name: GOTRUE_MAILER_URLPATHS_INVITE, value: /auth/v1/verify }
+            - { name: GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE, value: /auth/v1/verify }
+            - {
+                name: GOTRUE_SMTP_HOST,
+                valueFrom: { secretKeyRef: { name: medlink-app, key: SMTP_HOST } },
+              }
+            - {
+                name: GOTRUE_SMTP_PORT,
+                valueFrom: { secretKeyRef: { name: medlink-app, key: SMTP_PORT } },
+              }
+            - {
+                name: GOTRUE_SMTP_USER,
+                valueFrom: { secretKeyRef: { name: medlink-app, key: AUTH_SMTP_USER } },
+              }
+            - {
+                name: GOTRUE_SMTP_PASS,
+                valueFrom: { secretKeyRef: { name: medlink-app, key: AUTH_SMTP_PASS } },
+              }
+            - { name: GOTRUE_SMTP_ADMIN_EMAIL, value: no-reply@medlink.local }
+            - { name: GOTRUE_SMTP_SENDER_NAME, value: MedLink }
+            - { name: GOTRUE_MFA_TOTP_ENROLL_ENABLED, value: "true" }
+            - { name: GOTRUE_MFA_TOTP_VERIFY_ENABLED, value: "true" }
+            - { name: GOTRUE_PASSWORD_MIN_LENGTH, value: "12" }
+            - { name: GOTRUE_RATE_LIMIT_EMAIL_SENT, value: "30" }
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: auth, namespace: medlink }
+spec:
+  selector: { app: auth }
+  ports: [{ name: http, port: 9999, targetPort: http }]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: auth, namespace: medlink }
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: auth } }

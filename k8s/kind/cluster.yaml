@@ -1,0 +1,24 @@
+# Local Kubernetes cluster for the demo: 1 control-plane + 3 worker "servers", each one a
+# Docker container on your PC (kind = Kubernetes IN Docker).
+#   kind create cluster --name medlink --config k8s/kind/cluster.yaml
+# To simulate a server failure:  docker stop medlink-worker2   (and docker start medlink-worker2)
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    # The site and the mail catcher, reachable from your browser.
+    extraPortMappings:
+      # Use 127.0.0.1 in the browser (not "localhost", which may go to IPv6 and fail).
+      - { containerPort: 30080, hostPort: 8080, protocol: TCP } # MedLink   http://127.0.0.1:8080
+      - { containerPort: 30025, hostPort: 8025, protocol: TCP } # Mailpit   http://127.0.0.1:8025
+    kubeadmConfigPatches:
+      - |
+        kind: ClusterConfiguration
+        controllerManager:
+          extraArgs:
+            # A stopped server is declared "NotReady" after 20 s (default 40-50 s), so its pods
+            # are taken out of the Services and the database fails over sooner.
+            node-monitor-grace-period: "20s"
+  - role: worker
+  - role: worker
+  - role: worker

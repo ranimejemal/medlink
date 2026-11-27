@@ -16,6 +16,7 @@ import appCss from "../styles.css?url";
 
 import { logSecurityEvent } from "@/lib/auth.functions";
 import { clearActivity, idleExpired, markActivity } from "@/lib/session";
+import { RUNTIME_CONFIG } from "@/lib/public-env";
 
 function NotFoundComponent() {
   return (
@@ -68,6 +69,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap",
       },
     ],
+    // Kubernetes build: public settings written by the frontend container (see lib/public-env.ts).
+    // A classic (blocking) script, so it runs before the app's module scripts.
+    scripts: RUNTIME_CONFIG ? [{ src: "/env.js" }] : [],
   }),
   shellComponent: RootShell,
   component: RootComponent,

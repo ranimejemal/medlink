@@ -1,0 +1,76 @@
+# MedLink database: PostgreSQL with 2 copies (high availability), managed by CloudNativePG.
+#
+# - medlink-db-1 / medlink-db-2: one PRIMARY (reads + writes) and one STANDBY kept up to date by
+#   streaming replication (synchronous: a write is confirmed only once both copies have it).
+# - The two pods are forced onto two DIFFERENT servers (podAntiAffinity "required").
+# - If the primary's pod or server dies, CloudNativePG promotes the standby within seconds and
+#   moves the "medlink-db-rw" Service to it: the app keeps the same address and reconnects.
+#   When the failed server comes back, the old primary rejoins as the new standby.
+#
+# Image: the official Supabase Postgres image (same extensions as Supabase cloud: pg_cron, pg_net,
+# pgsodium, Vault...). The operator itself is installed once per cluster (see docs/deploiement.md).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: medlink-db
+  namespace: medlink
+spec:
+  instances: 2
+  imageName: supabase/postgres:15.8.1.085
+  # The Supabase image runs PostgreSQL as uid/gid 105/106 (not the CloudNativePG default 26).
+  postgresUID: 105
+  postgresGID: 106
+  primaryUpdateStrategy: unsupervised
+  # Fast failover: when the primary stops, wait at most 5 s for open connections (default 180 s:
+  # the auth/REST connection pools would keep the old primary busy for 3 minutes).
+  smartShutdownTimeout: 5
+  stopDelay: 30
+  switchoverDelay: 30
+  enableSuperuserAccess: true # secret "medlink-db-superuser", used only by the init Job
+
+  minSyncReplicas: 1
+  maxSyncReplicas: 1
+
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+
+  postgresql:
+    shared_preload_libraries:
+      - pg_stat_statements
+      - pg_cron
+      - pg_net
+      - pgsodium
+      - supabase_vault
+    parameters:
+      cron.database_name: postgres
+      # Vault / pgsodium root key: read from the Secret mounted below, identical on both copies.
+      pgsodium.getkey_script: /projected/getkey.sh
+      vault.getkey_script: /projected/getkey.sh
+      max_connections: "200"
+    pg_hba:
+      # Supabase services connect with passwords over the cluster network.
+      - host all all 0.0.0.0/0 scram-sha-256
+
+  projectedVolumeTemplate:
+    sources:
+      - secret:
+          name: medlink-db-keys
+          items:
+            - { key: getkey.sh, path: getkey.sh, mode: 0555 }
+            - { key: pgsodium_root.key, path: pgsodium_root.key, mode: 0444 }
+
+  bootstrap:
+    initdb:
+      # Supabase keeps everything in the "postgres" database; the Supabase schema is created
+      # afterwards by the medlink-db-init Job (k8s/database/init-job.yaml).
+      database: app
+      owner: app
+
+  storage:
+    size: 2Gi
+
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 1Gi }

@@ -8,3 +8,7 @@ bun.lock
 routeTree.gen.ts
 .vercel
 medlink-mobile
+
+# nginx configuration (not a format Prettier knows)
+docker/**/*.inc
+docker/**/*.template

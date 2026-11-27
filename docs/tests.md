@@ -31,6 +31,15 @@ cmd /c "docker exec -i supabase_db_lmocoknimijxqegbxbyg psql -U postgres -v ON_E
 
 (Le nom du conteneur vient de `project_id` dans `supabase/config.toml` ; vérifiez-le avec `docker ps`.)
 
+Sur le cluster Kubernetes de démo (`scripts/k8s-up.ps1`), contre la base **primaire** :
+
+```powershell
+$p = kubectl -n medlink get cluster medlink-db -o jsonpath='{.status.currentPrimary}'
+Get-Content supabase\tests\rbac.sql | kubectl -n medlink exec -i $p -c postgres -- psql -U postgres -d postgres -v ON_ERROR_STOP=1
+```
+
+Résultat attendu : `ALL RBAC TESTS PASSED` (vérifié le 26/11/2026 sur le cluster de test).
+
 ### Matrice vérifiée
 
 | Action                                          | Anonyme | Patient | Praticien sans MFA | Praticien MFA |   Accueil   | Admin sans MFA | Admin MFA |

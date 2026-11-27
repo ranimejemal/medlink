@@ -4,3 +4,6 @@ node_modules
 .env
 .env.*
 !.env.example
+dist
+.vercel
+k8s/secrets.local.yaml

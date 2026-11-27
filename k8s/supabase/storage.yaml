@@ -1,0 +1,85 @@
+# Supabase Storage: patient documents (bucket "patient-documents", private, 10 MB max).
+# The files themselves are kept on a persistent volume; their metadata and access rules (RLS)
+# are in the database. 1 replica: a "ReadWriteOnce" volume can only be mounted by one pod.
+# If its server goes down, Kubernetes restarts it elsewhere once the volume is available again
+# (on a cloud cluster, use a ReadWriteMany volume or S3 storage to run 2 replicas).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage
+  namespace: medlink
+  labels: { app: storage, tier: supabase }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: storage } }
+  strategy: { type: Recreate }
+  template:
+    metadata: { labels: { app: storage, tier: supabase } }
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: storage
+          image: supabase/storage-api:v1.25.7
+          ports: [{ name: http, containerPort: 5000 }]
+          env:
+            - {
+                name: STORAGE_DB_PASSWORD,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: STORAGE_DB_PASSWORD } },
+              }
+            - {
+                name: ANON_KEY,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: ANON_KEY } },
+              }
+            - {
+                name: SERVICE_KEY,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: SERVICE_ROLE_KEY } },
+              }
+            - {
+                name: AUTH_JWT_SECRET,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: JWT_SECRET } },
+              }
+            - {
+                name: PGRST_JWT_SECRET,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: JWT_SECRET } },
+              }
+            - {
+                name: DATABASE_URL,
+                value: "postgres://supabase_storage_admin:$(STORAGE_DB_PASSWORD)@medlink-db-rw:5432/postgres",
+              }
+            - { name: POSTGREST_URL, value: "http://rest:3000" }
+            - { name: FILE_SIZE_LIMIT, value: "10485760" }
+            - { name: STORAGE_BACKEND, value: file }
+            - { name: FILE_STORAGE_BACKEND_PATH, value: /var/lib/storage }
+            - { name: TENANT_ID, value: stub }
+            - { name: REGION, value: stub }
+            - { name: GLOBAL_S3_BUCKET, value: stub }
+            - { name: ENABLE_IMAGE_TRANSFORMATION, value: "false" }
+          readinessProbe:
+            httpGet: { path: /status, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /status, port: http }
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 20m, memory: 96Mi }
+            limits: { memory: 384Mi }
+          volumeMounts:
+            - { name: files, mountPath: /var/lib/storage }
+      volumes:
+        - name: files
+          persistentVolumeClaim: { claimName: storage-files }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: storage-files, namespace: medlink }
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 2Gi } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: storage, namespace: medlink }
+spec:
+  selector: { app: storage }
+  ports: [{ name: http, port: 5000, targetPort: http }]

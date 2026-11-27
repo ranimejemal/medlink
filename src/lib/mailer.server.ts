@@ -12,7 +12,8 @@ export function smtpConfig() {
     host,
     port,
     secure: port === 465, // 465 = TLS from the start, 587 = STARTTLS
-    requireTLS: port !== 465,
+    // SMTP_INSECURE=1 only for the demo mail catcher inside the cluster (Mailpit, k8s/).
+    requireTLS: port !== 465 && process.env["SMTP_INSECURE"] !== "1",
     auth: { user, pass },
     from: process.env["SMTP_FROM"] || `MedLink <${user}>`,
   };

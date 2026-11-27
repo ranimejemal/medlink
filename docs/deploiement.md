@@ -1,112 +1,196 @@
 # Déploiement de MedLink : conteneurs, Kubernetes et haute disponibilité
 
+MedLink tourne sur **Kubernetes**, sans Vercel : chaque couche (frontend, backend, base de données)
+a **sa propre image de conteneur**, chaque couche a **au moins 2 copies sur des serveurs différents**,
+et si un serveur tombe, Kubernetes **bascule sur les autres** automatiquement.
+
 ## 1. Architecture
 
 ```
-Navigateur ──HTTPS──▶ Ingress / Caddy ──▶ App MedLink (Node.js, 2+ conteneurs)
-                                              │  interface React (SSR) + API serveur
-                                              ▼
-                                   Supabase (cloud) : PostgreSQL 17, Auth, Storage, Vault
+                       Navigateur  http://127.0.0.1:8080
+                                │
+                     ┌──────────▼───────────┐
+                     │  frontend (nginx) ×2 │  pages de l'app (fichiers statiques)
+                     └───┬──────────────┬───┘
+            /api, /_serverFn            /auth/v1, /rest/v1, /storage/v1
+                         │              │
+            ┌────────────▼─────┐   ┌────▼──────────────┐
+            │ backend (Node) ×2│──▶│ gateway (nginx) ×2│
+            └──────────────────┘   └──┬──────┬──────┬──┘
+                                      │      │      │
+                              auth ×2   rest ×2   storage ×1
+                             (GoTrue) (PostgREST)  (fichiers)
+                                      │      │      │
+                     ┌────────────────▼──────▼──────▼───────────────┐
+                     │ base de données PostgreSQL (CloudNativePG)    │
+                     │  medlink-db-1 PRIMAIRE ⇄ medlink-db-2 SECOURS │
+                     │  réplication synchrone, 2 serveurs différents │
+                     └───────────────────────────────────────────────┘
 ```
 
-| Couche                      | Où elle tourne                        | Image / service                                 |
-| --------------------------- | ------------------------------------- | ----------------------------------------------- |
-| **Frontend** (pages React)  | conteneur `app`                       | `ghcr.io/ranimejemal/medlink` (Dockerfile)      |
-| **Backend** (API, e-mails)  | **le même** conteneur `app`           | idem : TanStack Start sert les pages ET l'API   |
-| **Base de données**         | Supabase cloud (PostgreSQL 17 managé) | en local : conteneur `supabase/postgres` (CLI)  |
-| Reverse proxy HTTPS         | conteneur `caddy` (Docker) / Ingress  | `caddy:2-alpine` / ingress-nginx + cert-manager |
-| Tâche planifiée des e-mails | conteneur `cron` / CronJob / pg_cron  | `curlimages/curl`                               |
+| Couche                    | Image                                                       | Copies        | Rôle                                                                           |
+| ------------------------- | ----------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------ |
+| **Frontend**              | `medlink-frontend` (`docker/frontend/Dockerfile`, nginx)    | 2 à 5         | Pages React (fichiers statiques), point d'entrée du site, en-têtes de sécurité |
+| **Backend**               | `medlink-backend` (`docker/backend/Dockerfile`, Node.js 22) | 2 à 5         | Fonctions serveur, `/api` (Swagger, santé, e-mails), secrets côté serveur      |
+| **Base de données**       | `supabase/postgres:15.8.1.085` + opérateur CloudNativePG    | 2             | PostgreSQL avec les extensions Supabase (Vault, pg_cron, pg_net…)              |
+| Initialisation de la base | `medlink-db-init` (`docker/db-init/Dockerfile`)             | Job           | Schéma Supabase, 18 migrations MedLink, données et comptes de démo             |
+| Authentification          | `supabase/gotrue`                                           | 2             | Inscription, code e-mail, connexion, MFA (TOTP)                                |
+| API REST                  | `postgrest/postgrest`                                       | 2             | Tables et fonctions, protégées par RLS                                         |
+| Passerelle API            | `nginx`                                                     | 2             | Rôle de Kong sur Supabase cloud : `/auth/v1`, `/rest/v1`, `/storage/v1`        |
+| Stockage                  | `supabase/storage-api`                                      | 1             | Documents des patients (bucket privé, 10 Mo max)                               |
+| E-mails de démo           | `axllent/mailpit`                                           | 1             | Reçoit tous les e-mails (http://127.0.0.1:8025)                                |
+| Tâche des e-mails         | `curlimages/curl` (CronJob)                                 | chaque minute | Confirmations et rappels de rendez-vous                                        |
 
-### Pourquoi le frontend et le backend sont dans la même image
+Toute la configuration est dans `k8s/` (`kubectl apply -k k8s`). Les secrets (clés JWT, mots de passe
+de la base, clé racine de Vault) sont **générés sur le PC** par `scripts/k8s-secrets.mjs`, jamais
+commités (US-45).
 
-MedLink utilise **TanStack Start** : le même serveur Node.js génère les pages (rendu côté serveur)
-et expose l'API (`/api/...` et les fonctions serveur). Les séparer en deux images obligerait à
-dupliquer le code partagé et ajouterait un appel réseau sans gain de sécurité. Le passage à
-l'échelle se fait en **multipliant les conteneurs `app`** (2 à 5 en Kubernetes).
+### Pourquoi le frontend et le backend sont deux images
 
-### Base de données : choix retenu (option B — Supabase cloud)
+Le frontend est construit en **application monopage** (`MEDLINK_SPA=1`) : ce ne sont que des fichiers
+statiques servis par nginx, sans Node.js ni secret. Le backend ne contient que le serveur Node.js
+(fonctions serveur et `/api`). Les deux sont construits à partir du même code : les identifiants des
+fonctions serveur sont identiques dans les deux images.
 
-| Option                                     | Avantages                                                                   | Inconvénients                                                           |
-| ------------------------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| A. Supabase auto-hébergé (≈ 10 conteneurs) | Tout est chez nous                                                          | Sauvegardes, mises à jour de sécurité, haute dispo à notre charge       |
-| **B. Supabase cloud (retenu)**             | PostgreSQL managé, chiffrement disque, sauvegardes, correctifs automatiques | Dépendance à un fournisseur (atténuée : sauvegardes exportables, US-37) |
+Les réglages publics du navigateur (adresse et clé publique de l'API) sont lus **au démarrage du
+conteneur** (`/env.js`), pas à la construction : la même image fonctionne sur n'importe quel cluster.
 
-Pour le **développement et les tests**, la base tourne bien en **conteneurs** grâce à la CLI Supabase :
+## 2. Haute disponibilité : ce qui se passe en cas de panne
+
+| Panne                                                | Réaction                                                                                                                  | Mesuré en test                                      |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Un conteneur frontend / backend / auth / rest plante | L'autre copie continue de servir ; Kubernetes redémarre le conteneur (`livenessProbe`)                                    | aucune erreur visible                               |
+| **Le conteneur de la base primaire plante**          | CloudNativePG **promeut la copie de secours** en primaire et déplace l'adresse `medlink-db-rw` vers elle                  | **≈ 8 s** d'indisponibilité, puis tout refonctionne |
+| **Le serveur de la base primaire tombe**             | Même bascule, après la détection de la panne du serveur (20 s) ; l'opérateur et le DNS restent sur le nœud de contrôle    | bascule en **17 s**, site rétabli en **≈ 80 s**     |
+| Un serveur (nœud) entier tombe                       | Après 20 s il est déclaré « NotReady » : ses pods sortent du trafic ; après 30 s ils sont recréés sur les autres serveurs | les copies restantes servent pendant ce temps       |
+| Le serveur revient                                   | L'ancienne base primaire **rejoint le cluster comme secours** et se resynchronise                                         | automatique                                         |
+| Pic de charge                                        | Le HPA ajoute des copies du frontend et du backend (jusqu'à 5)                                                            | —                                                   |
+| Mise à jour de l'application                         | Rolling update `maxUnavailable: 0`                                                                                        | aucune coupure                                      |
+| Maintenance d'un serveur (`kubectl drain`)           | `PodDisruptionBudget` : au moins 1 copie de chaque service reste active                                                   | —                                                   |
+
+**Aucune perte de données lors d'une bascule** : la réplication est **synchrone**
+(`minSyncReplicas: 1`) ; une écriture n'est confirmée que quand les deux copies l'ont reçue.
+Les deux copies de la base sont **obligatoirement** sur deux serveurs différents
+(`podAntiAffinityType: required`), et la clé de chiffrement des données médicales (Vault, US-43)
+est la même sur les deux : les données restent lisibles après une bascule.
+
+Tests réalisés (cluster de test, 26/11/2026) :
+
+- 49/49 tests RBAC (`supabase/tests/rbac.sql`) sur la base Kubernetes ;
+- parcours complet dans un navigateur : inscription → code reçu par e-mail → confirmation →
+  connexion → réservation → e-mail de confirmation envoyé par le CronJob ;
+- dépôt d'un document dans le stockage (et refus dans le dossier d'un autre patient) ;
+- arrêt brutal du conteneur de la base primaire pendant des requêtes continues : ≈ 8 s d'erreurs,
+  puis bascule ;
+- arrêt d'un serveur entier (celui de la base primaire), cluster kind de 3 serveurs, 27/11/2026 :
+  base de secours promue **17 s** après l'arrêt, site de nouveau disponible **≈ 80 s** après
+  (le temps que les connexions vers l'ancien serveur expirent), aucune donnée perdue ; au retour du
+  serveur, l'ancienne primaire est revenue comme copie de secours.
+
+### Limites connues (à dire à la soutenance)
+
+| Point                                        | Explication                                                                                   | En production                                      |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Stockage des documents : 1 copie             | Un volume « ReadWriteOnce » ne se monte que sur un serveur                                    | Stockage S3 ou volume « ReadWriteMany » → 2 copies |
+| Cluster kind : 4 « serveurs » sur un seul PC | Démonstration : chaque serveur est un conteneur Docker                                        | 3 vraies machines (ou un Kubernetes managé)        |
+| 1 seul nœud de contrôle (control-plane)      | Suffisant pour la démo ; s'il tombe, les applis continuent mais on ne peut plus rien modifier | 3 nœuds de contrôle                                |
+| Mailpit à la place d'une vraie boîte mail    | Démo sans compte e-mail                                                                       | `SMTP_*` réels dans `scripts/k8s-secrets.mjs`      |
+| HTTP (pas HTTPS) en local                    | localhost                                                                                     | `k8s/ingress.example.yaml` (Let's Encrypt)         |
+
+## 3. Lancer la démo sur un PC Windows
+
+Prérequis : **Docker Desktop** lancé (8 Go de RAM pour Docker conseillés : Settings → Resources),
+**Node.js**, et :
 
 ```powershell
-npx supabase start        # lance PostgreSQL 17, Auth, Storage, Studio... dans Docker
-npx supabase db reset     # recrée la base locale à partir de supabase/migrations
-npx supabase stop
+winget install Kubernetes.kind Kubernetes.kubectl
 ```
 
-L'image `supabase/postgres` est la même que celle de la production : les migrations testées en
-local sont celles appliquées en production (`npx supabase db push --remote`).
-
-## 2. Docker Compose (un serveur, VPS ou PC)
+Puis, dans le dossier du projet (nouveau terminal après winget) :
 
 ```powershell
-copy .env.example .env      # puis remplir les valeurs
-docker compose up -d --build
-docker compose ps           # "app" doit être "healthy"
+.\scripts\k8s-up.ps1
 ```
 
-- `app` a un **HEALTHCHECK** (`/api/health`) : Caddy et la tâche e-mails ne démarrent que quand l'app est prête.
-- `restart: unless-stopped` : l'app redémarre seule après un crash ou un redémarrage du serveur.
+Le script (10 à 15 min la première fois) :
 
-## 3. Kubernetes (si un serveur tombe)
+1. crée le cluster kind : 1 nœud de contrôle + 3 serveurs (`k8s/kind/cluster.yaml`) ;
+2. installe l'opérateur de base de données CloudNativePG et metrics-server ;
+3. construit les 3 images MedLink et les charge dans le cluster ;
+4. génère les secrets (`k8s/secrets.local.yaml`, ignoré par Git) ;
+5. déploie tout (`kubectl apply -k k8s`) et attend que tout soit prêt.
 
-Fichiers dans `k8s/` :
+| Adresse                        | Contenu                                                 |
+| ------------------------------ | ------------------------------------------------------- |
+| http://127.0.0.1:8080          | MedLink                                                 |
+| http://127.0.0.1:8080/api/docs | Documentation Swagger de l'API                          |
+| http://127.0.0.1:8025          | Mailpit : codes d'inscription, confirmations et rappels |
 
-| Fichier               | Rôle                                                                                                                               |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `namespace.yaml`      | Espace `medlink`, Pod Security « restricted » (aucun conteneur privilégié)                                                         |
-| `configmap.yaml`      | Réglages non secrets                                                                                                               |
-| `secret.example.yaml` | Modèle : le vrai Secret est créé depuis `.env`, jamais commité                                                                     |
-| `deployment.yaml`     | 2 répliques sur des nœuds différents, mise à jour sans coupure, sondes, utilisateur non-root, système de fichiers en lecture seule |
-| `service.yaml`        | Adresse interne stable                                                                                                             |
-| `ingress.yaml`        | HTTPS (Let's Encrypt via cert-manager)                                                                                             |
-| `cronjob.yaml`        | E-mails de confirmation / rappel chaque minute                                                                                     |
-| `hpa.yaml`            | 2 à 5 répliques selon la charge CPU                                                                                                |
-| `pdb.yaml`            | Au moins 1 réplique pendant une maintenance de nœud                                                                                |
-| `networkpolicy.yaml`  | Seuls l'Ingress et le CronJob peuvent joindre l'app                                                                                |
+Utilisez bien **127.0.0.1** et pas `localhost` : sous Windows, le navigateur peut envoyer
+`localhost` en IPv6 (`::1`), que Docker Desktop ne transmet pas au cluster (erreur
+`ERR_CONNECTION_RESET`). Si le port 8080 est déjà pris (Jenkins, Hyper-V…), le script choisit un
+autre port libre (8088, 8090…) et l'affiche à la fin.
 
-### Ce qui se passe en cas de panne
+Comptes de démo (mot de passe `MedLink-Demo-2026!`) : `patient.demo@medlink.test`,
+`doctor.demo@medlink.test`, `admin.demo@medlink.test`, `staff.demo@medlink.test`. Le praticien et
+l'administrateur doivent configurer le MFA à la première connexion (application d'authentification).
 
-| Panne                                | Réaction                                                                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| Le processus Node plante / se bloque | `livenessProbe` (`/api/health`) échoue 3 fois → Kubernetes redémarre le conteneur                                         |
-| Un serveur (nœud) tombe              | L'autre réplique continue de servir ; Kubernetes recrée la réplique perdue sur un autre nœud                              |
-| La base ne répond plus               | `readinessProbe` (`/api/ready`) → 503 : les pods sortent du trafic sans être tués, et y reviennent dès que la base répond |
-| Pic de charge                        | Le HPA ajoute des répliques (jusqu'à 5)                                                                                   |
-| Mise à jour de l'application         | Rolling update `maxUnavailable: 0` : aucune coupure                                                                       |
+### Démonstration de la panne d'un serveur
 
-### Déployer
-
-```bash
-# 1. Image : construite et publiée par .github/workflows/docker.yml à chaque push sur main
-#    (variables de dépôt VITE_SUPABASE_URL et VITE_SUPABASE_PUBLISHABLE_KEY à définir une fois).
-# 2. Secret depuis le fichier .env (jamais dans Git) :
-kubectl create namespace medlink
-kubectl -n medlink create secret generic medlink-secrets --from-env-file=.env
-# 3. Tout le reste :
-kubectl apply -k k8s/
-kubectl -n medlink get pods,ingress
+```powershell
+.\scripts\k8s-failover-demo.ps1
 ```
 
-Pour une démonstration sur un PC : **Docker Desktop → Settings → Kubernetes → Enable**, ou `minikube start`.
-Sans domaine : `kubectl -n medlink port-forward svc/medlink 8080:80` puis http://localhost:8080.
+Le script montre où tourne la base primaire, **arrête ce serveur** (`docker stop`), affiche toutes les
+2 s l'état du site et le nom de la base primaire (la copie de secours prend le relais), puis redémarre
+le serveur et montre l'ancienne primaire revenir comme secours.
 
-## 4. Vercel (démonstration actuelle)
+Commandes utiles pendant la démo :
 
-Vercel reste utilisé pour la démo (`medlink-fri3.vercel.app`) car il est gratuit et sans serveur à gérer.
-L'application ne dépend pas de Vercel : la même image tourne sur Docker Compose ou Kubernetes.
-Sur Vercel, la tâche des e-mails est déclenchée par la base elle-même (pg_cron + pg_net, migration
-`20261119000000_email_job_from_database.sql`).
+```powershell
+kubectl get nodes                                  # les 4 serveurs
+kubectl -n medlink get pods -o wide                # chaque copie et son serveur
+kubectl -n medlink get cluster medlink-db          # état de la base et primaire actuelle
+docker stop medlink-worker2                        # simuler la panne d'un serveur
+docker start medlink-worker2
+```
 
-## 5. Sondes et documentation de l'API
+Tout supprimer : `.\scripts\k8s-down.ps1`.
 
-| URL           | Rôle                                                           |
-| ------------- | -------------------------------------------------------------- |
-| `/api/health` | Vivant ? (ne touche pas la base)                               |
-| `/api/ready`  | Prêt ? (la base répond en moins de 3 s), sinon 503             |
-| `/api/docs`   | Documentation Swagger de l'API (spécification `/openapi.yaml`) |
+Les scripts affichent leurs messages **en français** par défaut ; ajoutez `-Lang en` pour l'anglais
+(par exemple `.\scripts\k8s-failover-demo.ps1 -Lang en`).
+
+### Après une nouvelle migration
+
+```powershell
+docker build -f docker/db-init/Dockerfile -t ghcr.io/ranimejemal/medlink-db-init:latest .
+kind load docker-image ghcr.io/ranimejemal/medlink-db-init:latest --name medlink
+kubectl -n medlink delete job medlink-db-init
+kubectl apply -k k8s
+```
+
+Le Job n'applique que les migrations pas encore appliquées (table `supabase_migrations.schema_migrations`).
+
+## 4. Images publiées par GitHub Actions
+
+`.github/workflows/docker.yml` construit les 3 images à chaque pull request (vérification) et les
+publie sur `ghcr.io/ranimejemal/medlink-frontend`, `-backend` et `-db-init` à chaque push sur `main`.
+Pour un vrai cluster, les rendre publiques (GitHub → Packages → Package settings → Change visibility)
+ou ajouter un `imagePullSecret`.
+
+## 5. Autres modes (toujours possibles)
+
+| Mode                      | Commande                                                       | Base de données                                |
+| ------------------------- | -------------------------------------------------------------- | ---------------------------------------------- |
+| Développement             | `npm run dev`                                                  | Supabase local (`npx supabase start`) ou cloud |
+| Docker Compose, 1 serveur | `docker compose up -d --build` (image tout-en-un `Dockerfile`) | Supabase cloud                                 |
+| Vercel                    | push sur `main`                                                | Supabase cloud                                 |
+
+## 6. Sondes et documentation de l'API
+
+| URL           | Rôle                                                                               |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `/healthz`    | Frontend vivant ? (nginx)                                                          |
+| `/api/health` | Backend vivant ? (ne touche pas la base)                                           |
+| `/api/ready`  | Backend prêt ? (la base répond en moins de 3 s), sinon 503 : le pod sort du trafic |
+| `/api/docs`   | Documentation Swagger de l'API (spécification `/openapi.yaml`)                     |

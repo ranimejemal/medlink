@@ -1,0 +1,97 @@
+# MedLink backend (image medlink-backend): server functions, /api (Swagger, health, e-mail job).
+# 2 to 5 replicas spread over the servers. If a pod or a whole server goes down, the Service
+# sends traffic to the remaining pods and Kubernetes recreates the missing ones elsewhere.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: medlink
+  labels: { app: backend, tier: app }
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  selector: { matchLabels: { app: backend } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } } # zero-downtime updates
+  template:
+    metadata: { labels: { app: backend, tier: app } }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # "node" user of the image
+        seccompProfile: { type: RuntimeDefault }
+      topologySpreadConstraints:
+        - {
+            maxSkew: 1,
+            topologyKey: kubernetes.io/hostname,
+            whenUnsatisfiable: ScheduleAnyway,
+            labelSelector: { matchLabels: { app: backend } },
+          }
+      containers:
+        - name: backend
+          image: ghcr.io/ranimejemal/medlink-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 3000 }]
+          env:
+            - { name: SUPABASE_URL, value: "http://gateway:8000" }
+            - {
+                name: SITE_URL,
+                valueFrom: { configMapKeyRef: { name: medlink-config, key: PUBLIC_URL } },
+              }
+          envFrom:
+            - configMapRef: { name: medlink-config }
+            - secretRef: { name: medlink-app }
+          resources:
+            requests: { cpu: 100m, memory: 192Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          startupProbe:
+            httpGet: { path: /api/health, port: http }
+            periodSeconds: 3
+            failureThreshold: 20
+          # Restarted if the process hangs.
+          livenessProbe:
+            httpGet: { path: /api/health, port: http }
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Taken out of the Service while the database cannot be reached (e.g. during a failover).
+          readinessProbe:
+            httpGet: { path: /api/ready, port: http }
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata: { name: backend, namespace: medlink }
+spec:
+  selector: { app: backend }
+  ports: [{ name: http, port: 3000, targetPort: http }]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: backend, namespace: medlink }
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: backend } }
+---
+# More pods under load (2 to 5), based on CPU. Needs metrics-server (installed by k8s/kind/setup).
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: backend, namespace: medlink }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: backend }
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
