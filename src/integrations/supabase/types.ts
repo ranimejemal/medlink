@@ -229,6 +229,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      wazuh_alerts: {
+        Row: {
+          id: string;
+          wazuh_alert_id: string;
+          rule_id: string;
+          rule_level: number;
+          description: string;
+          event_type: string | null;
+          ip_address: string | null;
+          attempts: number | null;
+          detected_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          wazuh_alert_id: string;
+          rule_id: string;
+          rule_level: number;
+          description: string;
+          event_type?: string | null;
+          ip_address?: string | null;
+          attempts?: number | null;
+          detected_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          wazuh_alert_id?: string;
+          rule_id?: string;
+          rule_level?: number;
+          description?: string;
+          event_type?: string | null;
+          ip_address?: string | null;
+          attempts?: number | null;
+          detected_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       availability_slots: {
         Row: {
           clinic_id: string;
