@@ -23,6 +23,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPatientRouteRouteImport } from './routes/_authenticated/patient/route'
 import { Route as AuthenticatedPractitionerRouteRouteImport } from './routes/_authenticated/practitioner/route'
 import { Route as AuthenticatedStaffRouteRouteImport } from './routes/_authenticated/staff/route'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin/dashboard'
 import { Route as AuthenticatedAdminMaintenanceRouteImport } from './routes/_authenticated/admin/maintenance'
 import { Route as AuthenticatedAdminPractitionersRouteImport } from './routes/_authenticated/admin/practitioners'
@@ -122,6 +123,11 @@ const AuthenticatedStaffRouteRoute = AuthenticatedStaffRouteRouteImport.update({
   id: '/staff',
   path: '/staff',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 const AuthenticatedAdminDashboardRoute =
   AuthenticatedAdminDashboardRouteImport.update({
@@ -303,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/practitioner': typeof AuthenticatedPractitionerRouteRouteWithChildren
   '/staff': typeof AuthenticatedStaffRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
   '/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
@@ -346,6 +353,7 @@ export interface FileRoutesByTo {
   '/practitioner': typeof AuthenticatedPractitionerRouteRouteWithChildren
   '/staff': typeof AuthenticatedStaffRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
   '/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
@@ -391,6 +399,7 @@ export interface FileRoutesById {
   '/_authenticated/practitioner': typeof AuthenticatedPractitionerRouteRouteWithChildren
   '/_authenticated/staff': typeof AuthenticatedStaffRouteRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/_authenticated/admin/maintenance': typeof AuthenticatedAdminMaintenanceRoute
   '/_authenticated/admin/practitioners': typeof AuthenticatedAdminPractitionersRoute
@@ -436,6 +445,7 @@ export interface FileRouteTypes {
     | '/practitioner'
     | '/staff'
     | '/dashboard'
+    | '/admin/audit'
     | '/admin/dashboard'
     | '/admin/maintenance'
     | '/admin/practitioners'
@@ -479,6 +489,7 @@ export interface FileRouteTypes {
     | '/practitioner'
     | '/staff'
     | '/dashboard'
+    | '/admin/audit'
     | '/admin/dashboard'
     | '/admin/maintenance'
     | '/admin/practitioners'
@@ -523,6 +534,7 @@ export interface FileRouteTypes {
     | '/_authenticated/practitioner'
     | '/_authenticated/staff'
     | '/_authenticated/dashboard'
+    | '/_authenticated/admin/audit'
     | '/_authenticated/admin/dashboard'
     | '/_authenticated/admin/maintenance'
     | '/_authenticated/admin/practitioners'
@@ -665,6 +677,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/staff'
       preLoaderRoute: typeof AuthenticatedStaffRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/dashboard': {
       id: '/_authenticated/admin/dashboard'
@@ -866,6 +885,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
   AuthenticatedAdminMaintenanceRoute: typeof AuthenticatedAdminMaintenanceRoute
   AuthenticatedAdminPractitionersRoute: typeof AuthenticatedAdminPractitionersRoute
@@ -877,6 +897,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
     AuthenticatedAdminMaintenanceRoute: AuthenticatedAdminMaintenanceRoute,
     AuthenticatedAdminPractitionersRoute: AuthenticatedAdminPractitionersRoute,

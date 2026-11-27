@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
+import { getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -7,12 +7,7 @@ const MAX_FAILURES = 5;
 const LOCK_MINUTES = 15;
 
 function clientIp(): string | null {
-  const req = getRequest();
-  return (
-    req?.headers.get("cf-connecting-ip") ??
-    req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    null
-  );
+  return getRequestIP() ?? null;
 }
 
 /**
