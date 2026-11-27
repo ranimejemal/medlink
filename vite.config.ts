@@ -26,6 +26,8 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     server: { host: "::", port: 8080 },
+    // The SPA build pre-renders the page shell on a local preview server (IPv4: works in Docker).
+    preview: { host: "127.0.0.1" },
     resolve: {
       alias: { "@": path.resolve(process.cwd(), "src") },
       dedupe: [
@@ -43,6 +45,9 @@ export default defineConfig(({ command, mode }) => {
       tanstackStart({
         // Use src/server.ts (our SSR error wrapper) as the server entry.
         server: { entry: "server" },
+        // Kubernetes (MEDLINK_SPA=1): the pages are built as static files served by the frontend
+        // image (nginx); the backend image only runs the server functions and /api.
+        ...(process.env["MEDLINK_SPA"] === "1" ? { spa: { enabled: true } } : {}),
         importProtection: {
           behavior: "error",
           client: { files: ["**/server/**"], specifiers: ["server-only"] },
@@ -50,7 +55,8 @@ export default defineConfig(({ command, mode }) => {
       }),
       // Production server bundle (US-57): a standalone Node server for Docker / a VPS, or the
       // Vercel format when the build runs on Vercel (Vercel sets VERCEL=1 during its builds).
-      ...(command === "build"
+      // Not in the SPA build: the frontend image is static files only (no Node server).
+      ...(command === "build" && process.env["MEDLINK_SPA"] !== "1"
         ? [
             nitro({
               preset:

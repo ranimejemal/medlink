@@ -1,0 +1,56 @@
+# Creates the Supabase schema, applies the MedLink migrations and loads the demo data.
+# Runs once after "kubectl apply -k k8s"; safe to run again after a new migration:
+#   kubectl -n medlink delete job medlink-db-init; kubectl apply -k k8s
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: medlink-db-init
+  namespace: medlink
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata: { labels: { app: medlink-db-init } }
+    spec:
+      restartPolicy: OnFailure
+      automountServiceAccountToken: false
+      containers:
+        - name: init
+          image: ghcr.io/ranimejemal/medlink-db-init:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - { name: PGHOST, value: medlink-db-rw }
+            - { name: AUTH_URL, value: "http://auth:9999" }
+            - {
+                name: SUPERUSER_PASSWORD,
+                valueFrom: { secretKeyRef: { name: medlink-db-superuser, key: password } },
+              }
+            - {
+                name: SUPABASE_ADMIN_PASSWORD,
+                valueFrom:
+                  { secretKeyRef: { name: medlink-supabase, key: SUPABASE_ADMIN_PASSWORD } },
+              }
+            - {
+                name: AUTH_DB_PASSWORD,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: AUTH_DB_PASSWORD } },
+              }
+            - {
+                name: STORAGE_DB_PASSWORD,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: STORAGE_DB_PASSWORD } },
+              }
+            - {
+                name: AUTHENTICATOR_PASSWORD,
+                valueFrom:
+                  { secretKeyRef: { name: medlink-supabase, key: AUTHENTICATOR_PASSWORD } },
+              }
+            - {
+                name: SERVICE_ROLE_KEY,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: SERVICE_ROLE_KEY } },
+              }
+            - {
+                name: DEMO_PASSWORD,
+                valueFrom: { configMapKeyRef: { name: medlink-config, key: DEMO_PASSWORD } },
+              }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 256Mi }

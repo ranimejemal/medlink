@@ -8,17 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
+import { publicSupabaseKey, publicSupabaseUrl } from "@/lib/public-env";
 import { logSecurityEvent } from "@/lib/auth.functions";
 import { friendlyError } from "@/lib/errors";
 import { Panel } from "@/components/medlink/ui";
 import { passwordSchema, PasswordRules } from "@/components/medlink/PasswordRules";
 import { PasswordInput } from "@/components/medlink/PasswordInput";
 
-const URL = import.meta.env["VITE_SUPABASE_URL"] as string;
-const KEY = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string;
-
 /** Checks the current password on a throw-away client, so the real session (and its MFA level) is untouched. */
 async function currentPasswordIsValid(email: string, password: string): Promise<boolean> {
+  const URL = publicSupabaseUrl() ?? "";
+  const KEY = publicSupabaseKey() ?? "";
   const probe = createClient(URL, KEY, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: {

@@ -1,0 +1,108 @@
+# API gateway (nginx), the role Kong plays on Supabase cloud: one address for the Supabase APIs.
+#   /auth/v1/*    -> auth (GoTrue)      /rest/v1/* -> rest (PostgREST)
+#   /storage/v1/* -> storage            /mail-templates/* -> e-mail templates read by auth
+# Used by the browser (through the frontend) and by the backend (SUPABASE_URL=http://gateway:8000).
+# 2 replicas on different servers; stateless.
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: gateway-config, namespace: medlink }
+data:
+  default.conf: |
+    resolver kube-dns.kube-system.svc.cluster.local valid=10s ipv6=off;
+    map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+    server {
+      listen 8000;
+      client_max_body_size 12m;   # documents up to 10 MB
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+      proxy_read_timeout 60s;
+      # Variables + resolver: nginx starts even if a service is not up yet, and follows pod changes.
+      set $auth    http://auth.medlink.svc.cluster.local:9999;
+      set $rest    http://rest.medlink.svc.cluster.local:3000;
+      set $storage http://storage.medlink.svc.cluster.local:5000;
+
+      location = /healthz { access_log off; return 200 "ok\n"; }
+      location /mail-templates/ { alias /etc/nginx/mail-templates/; }
+
+      location ~ ^/auth/v1/(.*)$    { proxy_pass $auth/$1$is_args$args; }
+      location ~ ^/rest/v1/(.*)$    { proxy_pass $rest/$1$is_args$args; }
+      location ~ ^/storage/v1/(.*)$ { proxy_pass $storage/$1$is_args$args; }
+      location / { return 404; }
+    }
+  confirmation.html: |
+    <h2>Bienvenue sur MedLink</h2>
+    <p>Votre code de confirmation :</p>
+    <p style="font-size:28px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
+    <p>Saisissez-le sur la page d'inscription. Il expire dans 1 heure.</p>
+    <p>Si vous n'avez pas demandé de compte, ignorez cet e-mail.</p>
+  recovery.html: |
+    <h2>Réinitialisation du mot de passe MedLink</h2>
+    <p><a href="{{ .ConfirmationURL }}">Choisir un nouveau mot de passe</a></p>
+    <p>Ou saisissez ce code : <strong>{{ .Token }}</strong></p>
+    <p>Si vous n'avez rien demandé, ignorez cet e-mail.</p>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: medlink
+  labels: { app: gateway, tier: supabase }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: gateway } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  template:
+    metadata: { labels: { app: gateway, tier: supabase } }
+    spec:
+      automountServiceAccountToken: false
+      topologySpreadConstraints:
+        - {
+            maxSkew: 1,
+            topologyKey: kubernetes.io/hostname,
+            whenUnsatisfiable: ScheduleAnyway,
+            labelSelector: { matchLabels: { app: gateway } },
+          }
+      containers:
+        - name: nginx
+          image: nginx:1.29-alpine
+          ports: [{ name: http, containerPort: 8000 }]
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { memory: 64Mi }
+          volumeMounts:
+            - { name: config, mountPath: /etc/nginx/conf.d/default.conf, subPath: default.conf }
+            - {
+                name: config,
+                mountPath: /etc/nginx/mail-templates/confirmation.html,
+                subPath: confirmation.html,
+              }
+            - {
+                name: config,
+                mountPath: /etc/nginx/mail-templates/recovery.html,
+                subPath: recovery.html,
+              }
+      volumes:
+        - name: config
+          configMap: { name: gateway-config }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: gateway, namespace: medlink }
+spec:
+  selector: { app: gateway }
+  ports: [{ name: http, port: 8000, targetPort: http }]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: gateway, namespace: medlink }
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: gateway } }

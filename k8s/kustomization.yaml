@@ -1,14 +1,36 @@
-# Apply everything:  kubectl apply -k k8s/
-# (create the Secret first, see secret.example.yaml)
+# The whole MedLink stack on Kubernetes:  kubectl apply -k k8s
+# Before the first apply: install the CloudNativePG operator and create the Secrets
+# (scripts/k8s-up.ps1 does everything; see docs/deploiement.md).
+#
+#   Tier       | Image                          | Copies | If a server goes down
+#   -----------|--------------------------------|--------|---------------------------------------
+#   frontend   | medlink-frontend (nginx)       | 2-5    | the other copy serves, a new one starts
+#   backend    | medlink-backend (Node.js)      | 2-5    | the other copy serves, a new one starts
+#   database   | supabase/postgres (CNPG)       | 2      | the standby is promoted in seconds
+#   auth, rest, gateway | Supabase images       | 2      | the other copy serves
+#   storage    | supabase/storage-api           | 1      | restarted (files on a volume)
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - namespace.yaml
-  - configmap.yaml
-  - deployment.yaml
-  - service.yaml
-  - ingress.yaml
-  - cronjob.yaml
-  - hpa.yaml
-  - pdb.yaml
-  - networkpolicy.yaml
+  - base/config.yaml
+  - database/cluster.yaml
+  - database/init-job.yaml
+  - supabase/auth.yaml
+  - supabase/rest.yaml
+  - supabase/storage.yaml
+  - supabase/gateway.yaml
+  - supabase/mailpit.yaml
+  - app/backend.yaml
+  - app/frontend.yaml
+  - app/cronjob.yaml
+
+# When a server stops answering, Kubernetes normally waits 5 minutes before recreating its pods
+# on another server. 30 s here: the surviving copy serves meanwhile, then a new copy starts.
+patches:
+  - target: { kind: Deployment }
+    patch: |-
+      - op: add
+        path: /spec/template/spec/tolerations
+        value:
+          - { key: node.kubernetes.io/unreachable, operator: Exists, effect: NoExecute, tolerationSeconds: 30 }
+          - { key: node.kubernetes.io/not-ready, operator: Exists, effect: NoExecute, tolerationSeconds: 30 }

@@ -1,0 +1,81 @@
+# MedLink frontend (image medlink-frontend): the pages of the app (nginx) and the entry point
+# of the site. 2 to 5 replicas spread over the servers.
+# Exposed on port 30080 of every server; kind maps it to http://127.0.0.1:8080.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: medlink
+  labels: { app: frontend, tier: app }
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  selector: { matchLabels: { app: frontend } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  template:
+    metadata: { labels: { app: frontend, tier: app } }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101 # "nginx" user of the image
+        seccompProfile: { type: RuntimeDefault }
+      topologySpreadConstraints:
+        - {
+            maxSkew: 1,
+            topologyKey: kubernetes.io/hostname,
+            whenUnsatisfiable: ScheduleAnyway,
+            labelSelector: { matchLabels: { app: frontend } },
+          }
+      containers:
+        - name: frontend
+          image: ghcr.io/ranimejemal/medlink-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{ name: http, containerPort: 8080 }]
+          env:
+            # Service addresses (stable ClusterIPs: they do not change when pods move).
+            - { name: BACKEND_URL, value: "http://backend.medlink.svc.cluster.local:3000" }
+            - { name: GATEWAY_URL, value: "http://gateway.medlink.svc.cluster.local:8000" }
+            # Public key only (the "anon" key, protected by Row Level Security).
+            - {
+                name: SUPABASE_PUBLISHABLE_KEY,
+                valueFrom: { secretKeyRef: { name: medlink-app, key: SUPABASE_PUBLISHABLE_KEY } },
+              }
+          resources:
+            requests: { cpu: 20m, memory: 16Mi }
+            limits: { cpu: 500m, memory: 64Mi }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: frontend, namespace: medlink }
+spec:
+  type: NodePort
+  selector: { app: frontend }
+  ports: [{ name: http, port: 8080, targetPort: http, nodePort: 30080 }]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: frontend, namespace: medlink }
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: frontend } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: frontend, namespace: medlink }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: frontend }
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }

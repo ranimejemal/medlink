@@ -89,8 +89,8 @@ Puis réglez l'authentification :
 
 3. **Authentication → Sign In / Providers** : vérifiez que **MFA (TOTP)** est activé.
 4. **Authentication → URL Configuration** :
-   - _Site URL_ : `http://localhost:8080`
-   - _Redirect URLs_ : `http://localhost:8080/**`
+   - _Site URL_ : `http://127.0.0.1:8080`
+   - _Redirect URLs_ : `http://127.0.0.1:8080/**`
 5. **Authentication → Policies** : mot de passe minimum **12 caractères** (même règle que l'application).
 
 ### Étape 5 — Configurer le fichier `.env`
@@ -109,7 +109,7 @@ Ouvrez `.env` et remplissez-le (voir le tableau de la [section 4](#4-variables-d
 npm run dev
 ```
 
-Ouvrez **http://localhost:8080** (si le port est occupé, Vite en choisit un autre et l'affiche
+Ouvrez **http://127.0.0.1:8080** (si le port est occupé, Vite en choisit un autre et l'affiche
 dans le terminal, par exemple 8082).
 
 > Après **toute** modification de `.env`, arrêtez le serveur (`Ctrl+C`) et relancez-le.
@@ -211,7 +211,7 @@ npx supabase gen types typescript --project-id <votre-ref-projet> > src/integrat
 
 | Commande          | Rôle                                               |
 | ----------------- | -------------------------------------------------- |
-| `npm run dev`     | Serveur de développement (http://localhost:8080)   |
+| `npm run dev`     | Serveur de développement (http://127.0.0.1:8080)   |
 | `npm run build`   | Build de production (serveur Node dans `.output/`) |
 | `npm run preview` | Prévisualiser le build                             |
 | `npm test`        | Lancer les tests (Vitest)                          |
@@ -229,7 +229,7 @@ npx supabase gen types typescript --project-id <votre-ref-projet> > src/integrat
 | « Identifiants invalides »                                      | Le compte de démo n'a pas été créé, ou mauvais mot de passe | S'inscrire via `/register` avec l'e-mail de démo                                                                         |
 | « Veuillez confirmer votre adresse e-mail »                     | Confirmation d'e-mail activée                               | Cliquer le lien reçu, ou la désactiver dans Supabase (Authentication → Providers → Email) **en développement seulement** |
 | « Compte temporairement verrouillé »                            | 5 échecs en 15 min                                          | Attendre 15 minutes                                                                                                      |
-| Le lien de confirmation / réinitialisation ne marche pas        | URL non autorisée                                           | Vérifier _Redirect URLs_ : `http://localhost:8080/**` (et le bon port)                                                   |
+| Le lien de confirmation / réinitialisation ne marche pas        | URL non autorisée                                           | Vérifier _Redirect URLs_ : `http://127.0.0.1:8080/**` (et le bon port)                                                   |
 | Page blanche ou 404 après clic dans le menu                     | La page n'est pas encore développée                         | Voir [section 13](#13-état-davancement)                                                                                  |
 | Le code MFA est refusé                                          | Heure du téléphone décalée                                  | Activer l'heure automatique sur le téléphone                                                                             |
 | « Le service est indisponible » sur _Nouvelle demande_          | `AI_API_KEY` vide                                           | Renseigner la clé IA dans `.env`                                                                                         |
@@ -257,13 +257,24 @@ Ce projet manipule des données de santé. Respectez toujours ces règles :
 
 ## 12. Déploiement
 
-Trois façons de faire tourner la **même** application (détails : [docs/deploiement.md](docs/deploiement.md)) :
+Déploiement principal : **Kubernetes, haute disponibilité** (détails : [docs/deploiement.md](docs/deploiement.md)).
+Frontend, backend et base de données ont chacun leur image ; chaque couche a au moins 2 copies sur
+des serveurs différents ; si le serveur de la base primaire tombe, la copie de secours prend le
+relais en quelques secondes (CloudNativePG, réplication synchrone).
 
-| Cible          | Commande                                  | Pour quoi                                 |
-| -------------- | ----------------------------------------- | ----------------------------------------- |
-| Vercel         | push sur `main` (déploiement automatique) | Démonstration en ligne                    |
-| Docker Compose | `docker compose up -d --build`            | Un serveur (VPS, PC) avec HTTPS par Caddy |
-| Kubernetes     | `kubectl apply -k k8s/`                   | Haute disponibilité (2 à 5 répliques)     |
+```powershell
+winget install Kubernetes.kind Kubernetes.kubectl   # une fois
+.\scripts\k8s-up.ps1                                # cluster local : 1 contrôle + 3 serveurs
+.\scripts\k8s-failover-demo.ps1                     # démo : arrêt du serveur de la base primaire
+```
+
+Site : http://127.0.0.1:8080 — e-mails de démo (Mailpit) : http://127.0.0.1:8025.
+
+| Cible          | Commande                                  | Pour quoi                                          |
+| -------------- | ----------------------------------------- | -------------------------------------------------- |
+| **Kubernetes** | `.\scripts\k8s-up.ps1`                    | Haute disponibilité, base auto-hébergée (2 copies) |
+| Docker Compose | `docker compose up -d --build`            | Un serveur (VPS, PC), base Supabase cloud          |
+| Vercel         | push sur `main` (déploiement automatique) | Ancienne démo en ligne, base Supabase cloud        |
 
 - Sondes : `/api/health` (vivant) et `/api/ready` (base joignable).
 - Documentation de l'API (Swagger) : **`/api/docs`**.
@@ -280,7 +291,8 @@ du praticien ; prise de rendez-vous par l'accueil ; supervision des cliniques, s
 statistiques anonymisées, alertes sécurité, **journal d'audit** (filtres, export) ; maintenance
 annoncée, **horaires 6 h – 22 h** ; **export et suppression des données** par le patient ;
 chiffrement AES-256 des données médicales ; sauvegardes chiffrées ; API documentée (Swagger) ;
-conteneurs et Kubernetes.
+**Kubernetes haute disponibilité** (images frontend / backend / base séparées, base répliquée avec
+bascule automatique).
 
 **Reste à faire (Sprint 7 / clôture) :** remplir la recette ([docs/tests.md](docs/tests.md)),
 lancer le scan ZAP sur le site déployé, mesurer les performances en ligne, procès-verbal de recette,

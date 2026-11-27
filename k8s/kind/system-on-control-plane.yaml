@@ -1,0 +1,13 @@
+# Demo cluster only: keeps the database operator (CloudNativePG) and the cluster DNS (CoreDNS) on
+# the control-plane node, which the failover demo never stops. Otherwise, stopping the worker that
+# runs them would also stop the component that must detect the failure and promote the standby,
+# and Kubernetes would wait 5 minutes before restarting it elsewhere.
+# Applied by scripts/k8s-up.ps1 with: kubectl patch deployment ... --patch-file <this file>
+spec:
+  template:
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+        - { key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule }
+        - { key: CriticalAddonsOnly, operator: Exists }
