@@ -1,0 +1,59 @@
+# ON DEMAND (not in kustomization.yaml): copies the real data from Supabase cloud into the cluster.
+# Started by scripts/k8s-import-cloud.ps1, which first creates the temporary Secret "medlink-cloud"
+# (Supabase cloud connection, typed by you, never written to a file) and deletes it afterwards.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: medlink-import-cloud
+  namespace: medlink
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata: { labels: { app: medlink-import-cloud } }
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: import
+          # Official Supabase Postgres image (already used by the database: nothing to build or
+          # load into the cluster); the MedLink scripts and migrations come from ConfigMaps.
+          image: supabase/postgres:15.8.1.085
+          command: ["/bin/sh", "/medlink/bin/import-cloud.sh"]
+          securityContext: { runAsUser: 105, runAsGroup: 106, allowPrivilegeEscalation: false }
+          env:
+            - { name: SEED_FILE, value: /medlink/bin/seed.sql }
+            - { name: MIGRATIONS_DIR, value: /medlink/migrations }
+            - { name: PGHOST, value: medlink-db-rw }
+            - { name: STORAGE_URL, value: "http://gateway:8000/storage/v1" }
+            - { name: CLOUD_API_URL, value: "https://lmocoknimijxqegbxbyg.supabase.co" }
+            - {
+                name: SUPERUSER_PASSWORD,
+                valueFrom: { secretKeyRef: { name: medlink-db-superuser, key: password } },
+              }
+            - {
+                name: SERVICE_ROLE_KEY,
+                valueFrom: { secretKeyRef: { name: medlink-supabase, key: SERVICE_ROLE_KEY } },
+              }
+            - {
+                name: CLOUD_DB_URL,
+                valueFrom: { secretKeyRef: { name: medlink-cloud, key: CLOUD_DB_URL } },
+              }
+            - {
+                name: CLOUD_SERVICE_KEY,
+                valueFrom:
+                  { secretKeyRef: { name: medlink-cloud, key: CLOUD_SERVICE_KEY, optional: true } },
+              }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          volumeMounts:
+            - { name: scripts, mountPath: /medlink/bin, readOnly: true }
+            - { name: migrations, mountPath: /medlink/migrations, readOnly: true }
+      volumes:
+        # Created by scripts/k8s-up.ps1 from docker/db-init/*.sh, supabase/seed.sql and
+        # supabase/migrations (kubectl create configmap ... --from-file).
+        - name: scripts
+          configMap: { name: medlink-db-scripts }
+        - name: migrations
+          configMap: { name: medlink-migrations }
